@@ -772,11 +772,13 @@
 
   function setMode(mode) {
     const isChat = mode === 'chat';
+    if (isChat) trackInteraction();
     document.getElementById('mode-video-btn').classList.toggle('active', !isChat);
     document.getElementById('mode-chat-btn').classList.toggle('active', isChat);
     document.getElementById('progress-inner').style.display = isChat ? 'none' : '';
     document.getElementById('content-card').classList.toggle('chat-active', isChat);
     if (isChat) {
+      chatHistory = [];
       document.getElementById('chat-messages').innerHTML = '';
       document.getElementById('chat-options').innerHTML  = '';
       showChatNode('start');
@@ -789,6 +791,7 @@
     if (nodeId === 'go_quote') { setMode('video'); go('quote'); return; }
     const node = chatFlowMap[nodeId] || chatFlowMap['start'];
     if (!node) return;
+    chatHistory.push(nodeId);
     addChatMsg(node.message, 'bot');
     renderChatOptions(node.options || []);
   }
@@ -948,9 +951,42 @@
   const STEP_PCT = { 1:25, 2:50, 3:75, 4:100 };
   const CHECK = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>`;
 
-  let navHistory = ['intro'];
+  /* ── Analytics ─────────────────────────────────────────── */
+  (function trackSession() {
+    if (sessionStorage.getItem('ax_sess')) return;
+    sessionStorage.setItem('ax_sess', '1');
+    try {
+      const s = JSON.parse(localStorage.getItem('ax_stats') || '{}');
+      s.sessions = (s.sessions || 0) + 1;
+      localStorage.setItem('ax_stats', JSON.stringify(s));
+    } catch(_) {}
+  })();
 
-  function go(section) { navHistory.push(section); render(section); }
+  function trackInteraction() {
+    if (sessionStorage.getItem('ax_inter')) return;
+    sessionStorage.setItem('ax_inter', '1');
+    try {
+      const s = JSON.parse(localStorage.getItem('ax_stats') || '{}');
+      s.interactions = (s.interactions || 0) + 1;
+      localStorage.setItem('ax_stats', JSON.stringify(s));
+    } catch(_) {}
+  }
+
+  function recordSubmission(payload, path, mode) {
+    try {
+      const s  = JSON.parse(localStorage.getItem('ax_stats') || '{}');
+      s.submissions = (s.submissions || 0) + 1;
+      s.log = s.log || [];
+      s.log.unshift({ ts: Date.now(), ...payload, path, mode });
+      if (s.log.length > 500) s.log.length = 500;
+      localStorage.setItem('ax_stats', JSON.stringify(s));
+    } catch(_) {}
+  }
+
+  let navHistory  = ['intro'];
+  let chatHistory = [];
+
+  function go(section) { trackInteraction(); navHistory.push(section); render(section); }
 
   function back() {
     if (navHistory.length > 1) { navHistory.pop(); render(navHistory[navHistory.length - 1]); }
@@ -993,6 +1029,10 @@
       ? selectedProducts.map(p => `${p.name} ×${p.qty}`).join(', ')
       : '';
 
+    const isChat = document.getElementById('content-card').classList.contains('chat-active');
+    const path   = (isChat ? chatHistory : navHistory).join(' → ');
+    const mode   = isChat ? 'chat' : 'video';
+
     const payload = {
       name:     document.getElementById('f-name').value,
       email:    document.getElementById('f-email').value,
@@ -1001,6 +1041,8 @@
       country:  document.getElementById('f-country').value,
       info:     document.getElementById('f-info').value,
       products,
+      mode,
+      path,
     };
 
     let endpoint = (window._remoteSettings && window._remoteSettings.formEndpoint) || '';
@@ -1025,6 +1067,7 @@
       } catch(_) {}
     }
 
+    recordSubmission(payload, isChat ? chatHistory.slice() : navHistory.slice(), mode);
     btn.disabled = false;
     btn.textContent = origText;
     document.getElementById('form-wrap').style.display = 'none';

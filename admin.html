@@ -312,6 +312,51 @@
       .prod-admin-fields { grid-template-columns: 1fr 1fr; }
     }
 
+    /* ── Statistics ─────────────────────────────── */
+    .stat-cards {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--a-card); border-radius: 14px; padding: 22px 20px;
+      border: 1px solid var(--a-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .stat-card-label {
+      font-size: 11px; font-weight: 700; color: var(--a-muted);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px;
+    }
+    .stat-card-value { font-size: 34px; font-weight: 800; color: var(--a-text); line-height: 1; }
+    .stat-card-sub   { font-size: 12px; color: var(--a-muted); margin-top: 5px; }
+    .sub-table-wrap  { overflow-x: auto; }
+    .sub-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .sub-table th {
+      text-align: left; padding: 10px 12px;
+      font-size: 11px; font-weight: 700; color: var(--a-muted);
+      text-transform: uppercase; letter-spacing: .07em;
+      border-bottom: 2px solid var(--a-border); white-space: nowrap;
+    }
+    .sub-table td { padding: 11px 12px; border-bottom: 1px solid var(--a-border); vertical-align: top; }
+    .sub-table tr:last-child td { border-bottom: none; }
+    .sub-table tbody tr:hover td { background: #f8fafc; }
+    .sub-mode-badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+    .sub-mode-video { background: rgba(var(--a-primary-rgb),.1); color: var(--a-primary); }
+    .sub-mode-chat  { background: #f0fdf4; color: #16a34a; }
+    .sub-path { font-size: 11.5px; color: var(--a-muted); white-space: nowrap; }
+    .sub-path-sep { color: #cbd5e1; margin: 0 3px; }
+    .stat-empty { text-align: center; padding: 40px 20px; color: var(--a-muted); font-size: 14px; }
+    .btn-clear-stats {
+      padding: 7px 14px; border: 1.5px solid #fecaca; border-radius: 8px;
+      background: #fef2f2; color: var(--a-danger);
+      font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .btn-clear-stats:hover { background: #fee2e2; }
+    @media (max-width: 640px) {
+      .stat-cards { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 420px) {
+      .stat-cards { grid-template-columns: 1fr 1fr; }
+    }
+
     /* ── Chat node editor ─────────────────────── */
     .chat-node-card {
       border: 1.5px solid var(--a-border); border-radius: 12px;
@@ -456,6 +501,10 @@
     <button class="tab-btn" data-tab="security" onclick="switchTab('security')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Security
+    </button>
+    <button class="tab-btn" data-tab="stats" onclick="switchTab('stats')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
     </button>
     <button class="tab-btn" data-tab="chat" onclick="switchTab('chat')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -765,6 +814,53 @@
 
     </div>
 
+    <!-- ══ STATS tab ══════════════════════════════════ -->
+    <div class="tab-panel" id="tab-stats">
+
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-card-label">Sessions</div>
+          <div class="stat-card-value" id="stat-sessions">—</div>
+          <div class="stat-card-sub">Total page loads</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Interactions</div>
+          <div class="stat-card-value" id="stat-interactions">—</div>
+          <div class="stat-card-sub">Users who navigated</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Submissions</div>
+          <div class="stat-card-value" id="stat-submissions">—</div>
+          <div class="stat-card-sub">Quote forms submitted</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Conversion</div>
+          <div class="stat-card-value" id="stat-conversion">—</div>
+          <div class="stat-card-sub">Submissions / sessions</div>
+        </div>
+      </div>
+
+      <div class="a-section">
+        <div class="a-section-title" style="justify-content:space-between;align-items:center">
+          <span style="display:flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Submission Log
+          </span>
+          <button class="btn-clear-stats" onclick="clearStats()">Clear all data</button>
+        </div>
+        <div class="a-section-sub">Every submitted quote form — including the interaction mode and path taken through the site.</div>
+        <div id="stat-list-wrap" class="sub-table-wrap">
+          <div class="stat-empty">No submissions yet.</div>
+        </div>
+      </div>
+
+      <div class="notice notice-info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>Session and interaction counts reflect visits to this site directly. Due to browser security, Shopify popup sessions run in an isolated context — their submission data (including path) is forwarded to your form endpoint (Zapier / Google Sheets).</div>
+      </div>
+
+    </div>
+
     <!-- ══ CHAT tab ══════════════════════════════════ -->
     <div class="tab-panel" id="tab-chat">
       <div class="a-section">
@@ -1001,6 +1097,9 @@
 
     // Chat
     initChatFlow();
+
+    // Stats (preload so numbers are ready when tab is opened)
+    loadStats();
   }
 
   function collectSettings() {
@@ -1047,7 +1146,64 @@
   function switchTab(name) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
-    document.getElementById('save-bar').style.display = (name === 'security' || name === 'shopify') ? 'none' : '';
+    document.getElementById('save-bar').style.display = (name === 'security' || name === 'shopify' || name === 'stats') ? 'none' : '';
+    if (name === 'stats') loadStats();
+  }
+
+  /* ── Statistics ─────────────────────────────────────── */
+  function loadStats() {
+    let raw = {};
+    try { raw = JSON.parse(localStorage.getItem('ax_stats') || '{}'); } catch(e) {}
+    const sessions     = raw.sessions     || 0;
+    const interactions = raw.interactions || 0;
+    const submissions  = raw.submissions  || 0;
+    const log          = raw.log          || [];
+
+    document.getElementById('stat-sessions').textContent     = sessions;
+    document.getElementById('stat-interactions').textContent = interactions;
+    document.getElementById('stat-submissions').textContent  = submissions;
+    document.getElementById('stat-conversion').textContent   =
+      sessions > 0 ? Math.round(submissions / sessions * 100) + '%' : '—';
+
+    const wrap = document.getElementById('stat-list-wrap');
+    if (!log.length) {
+      wrap.innerHTML = '<div class="stat-empty">No submissions yet.</div>';
+      return;
+    }
+
+    wrap.innerHTML = `<table class="sub-table">
+      <thead><tr>
+        <th>Date</th><th>Name</th><th>Email</th><th>Company</th><th>Country</th>
+        <th>Mode</th><th>Path</th><th>Products</th>
+      </tr></thead>
+      <tbody>${log.map(e => {
+        const pathHtml = (Array.isArray(e.path) ? e.path : (e.path || '').split(' → ')).map(escHtml)
+          .join('<span class="sub-path-sep">→</span>');
+        return `<tr>
+          <td style="white-space:nowrap;color:var(--a-muted);font-size:12px">${fmtDate(e.ts)}</td>
+          <td><strong>${escHtml(e.name)}</strong></td>
+          <td style="color:var(--a-muted)">${escHtml(e.email)}</td>
+          <td>${escHtml(e.company)}</td>
+          <td>${escHtml(e.country)}</td>
+          <td><span class="sub-mode-badge ${e.mode==='chat'?'sub-mode-chat':'sub-mode-video'}">${e.mode||'video'}</span></td>
+          <td class="sub-path">${pathHtml}</td>
+          <td style="font-size:12px;color:var(--a-muted)">${escHtml(e.products||'—')}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  function fmtDate(ts) {
+    const d = new Date(ts);
+    return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) + ' ' +
+           d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function clearStats() {
+    if (!confirm('Clear all statistics and the submission log? This cannot be undone.')) return;
+    localStorage.removeItem('ax_stats');
+    loadStats();
+    showToast('Statistics cleared.', 'success');
   }
 
   /* ── Chat flow editor ────────────────────────────── */

@@ -952,6 +952,8 @@
   const CHECK = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>`;
 
   /* ── Analytics ─────────────────────────────────────────── */
+  const IN_IFRAME = window.self !== window.top;
+
   (function trackSession() {
     if (sessionStorage.getItem('ax_sess')) return;
     sessionStorage.setItem('ax_sess', '1');
@@ -960,6 +962,7 @@
       s.sessions = (s.sessions || 0) + 1;
       localStorage.setItem('ax_stats', JSON.stringify(s));
     } catch(_) {}
+    if (IN_IFRAME) try { window.parent.postMessage({ type: 'AX_STAT', event: 'session' }, '*'); } catch(_) {}
   })();
 
   function trackInteraction() {
@@ -970,17 +973,20 @@
       s.interactions = (s.interactions || 0) + 1;
       localStorage.setItem('ax_stats', JSON.stringify(s));
     } catch(_) {}
+    if (IN_IFRAME) try { window.parent.postMessage({ type: 'AX_STAT', event: 'interaction' }, '*'); } catch(_) {}
   }
 
   function recordSubmission(payload, path, mode) {
+    const entry = { ts: Date.now(), ...payload, path, mode };
     try {
-      const s  = JSON.parse(localStorage.getItem('ax_stats') || '{}');
+      const s = JSON.parse(localStorage.getItem('ax_stats') || '{}');
       s.submissions = (s.submissions || 0) + 1;
       s.log = s.log || [];
-      s.log.unshift({ ts: Date.now(), ...payload, path, mode });
+      s.log.unshift(entry);
       if (s.log.length > 500) s.log.length = 500;
       localStorage.setItem('ax_stats', JSON.stringify(s));
     } catch(_) {}
+    if (IN_IFRAME) try { window.parent.postMessage({ type: 'AX_STAT', event: 'submission', data: entry }, '*'); } catch(_) {}
   }
 
   let navHistory  = ['intro'];

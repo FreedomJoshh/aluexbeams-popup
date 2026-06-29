@@ -381,6 +381,56 @@
     }
     .form-prod-info a:hover { text-decoration: underline; }
 
+    /* ── Mode toggle ────────────────────────────── */
+    .mode-toggle {
+      display: flex; background: #f1f5f9; border-radius: 10px; padding: 3px;
+      margin-bottom: 20px;
+    }
+    .mode-btn {
+      flex: 1; padding: 9px 14px; border: none; border-radius: 8px;
+      font-size: 13.5px; font-weight: 600; cursor: pointer;
+      background: transparent; color: #64748b;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      font-family: inherit; transition: all .2s;
+    }
+    .mode-btn.active { background: #fff; color: #1e293b; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+
+    /* ── Chat view ───────────────────────────────── */
+    .chat-messages {
+      display: flex; flex-direction: column; gap: 10px;
+      max-height: 380px; overflow-y: auto;
+      padding: 4px 0 12px; scroll-behavior: smooth;
+    }
+    .chat-msg {
+      max-width: 82%; padding: 11px 15px;
+      border-radius: 18px 18px 18px 4px;
+      background: #f1f5f9; color: #1e293b;
+      font-size: 14px; line-height: 1.55;
+      align-self: flex-start;
+      animation: fadeUp .25s ease both;
+    }
+    .chat-msg-user {
+      align-self: flex-end;
+      border-radius: 18px 18px 4px 18px;
+      background: var(--primary); color: #fff;
+    }
+    .chat-options { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .chat-opt-btn {
+      padding: 11px 16px;
+      border: 1.5px solid rgba(var(--primary-rgb), .25);
+      border-radius: 10px;
+      background: rgba(var(--primary-rgb), .04);
+      color: var(--primary);
+      font-size: 13.5px; font-weight: 500;
+      cursor: pointer; text-align: left;
+      transition: all .15s; font-family: inherit;
+    }
+    .chat-opt-btn:hover { background: rgba(var(--primary-rgb), .1); border-color: var(--primary); }
+
+    #content-card.chat-active .section,
+    #content-card.chat-active .section.active { display: none; }
+    #content-card.chat-active #chat-view { display: block; }
+
     /* ── Step caption (mobile only) ─────────────── */
     .step-caption {
       display: none; text-align: center;
@@ -425,6 +475,17 @@
 
   <!-- ── Progress ─────────────────────────────────── -->
   <div class="card">
+    <div class="mode-toggle">
+      <button id="mode-video-btn" class="mode-btn active" onclick="setMode('video')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Video
+      </button>
+      <button id="mode-chat-btn" class="mode-btn" onclick="setMode('chat')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Chat
+      </button>
+    </div>
+    <div id="progress-inner">
     <div class="progress-header">
       <span class="progress-label">Your Progress</span>
       <span class="progress-pct" id="pct">25%</span>
@@ -454,10 +515,11 @@
       <div class="bar-fill" id="bar" style="width:25%"></div>
     </div>
     <div class="step-caption" id="step-caption">Step 1 of 4 · Intro</div>
+    </div><!-- /#progress-inner -->
   </div>
 
   <!-- ── Content ───────────────────────────────────── -->
-  <div class="card">
+  <div class="card" id="content-card">
 
     <!-- Video 1: Intro ─────────────────────────────── -->
     <div class="section active" id="sec-intro">
@@ -611,6 +673,12 @@
       </div>
     </div>
 
+    <!-- Chat view ──────────────────────────────────── -->
+    <div id="chat-view">
+      <div id="chat-messages" class="chat-messages"></div>
+      <div id="chat-options" class="chat-options"></div>
+    </div>
+
   </div><!-- /.card -->
 
   <!-- ── Products ──────────────────────────────── -->
@@ -642,6 +710,113 @@
     prodInfoText: 'For complete technical specifications and data sheets, see our full product catalogue.',
     prodInfoLink: ''
   };
+
+  /* ── Chat flow data ──────────────────────────────────────── */
+  const DEFAULT_CHAT_FLOW = [
+    { id: 'start', message: 'Hi, how can we help you today?', options: [
+      { label: 'Request a quote',                       next: 'go_quote' },
+      { label: 'Frequently asked questions',            next: 'faq' },
+      { label: 'What makes Aluex products superior?',  next: 'superior' },
+      { label: 'Get in touch',                          next: 'contact' }
+    ]},
+    { id: 'faq', message: 'Here are our most common questions:', options: [
+      { label: 'What is a spreader bar?',         next: 'faq_spreader' },
+      { label: 'What capacities are available?',  next: 'faq_capacity' },
+      { label: 'How do I place an order?',        next: 'faq_order' },
+      { label: '← Back to main menu',        next: 'start' }
+    ]},
+    { id: 'faq_spreader', message: 'A spreader bar is a lifting device used to distribute the load across multiple lift points, reducing stress on the load. Aluex spreader bars are made from high-strength aluminium alloy for maximum performance at minimum weight.', options: [
+      { label: 'What capacities are available?', next: 'faq_capacity' },
+      { label: 'Request a quote',                next: 'go_quote' },
+      { label: '← Back to FAQ',             next: 'faq' }
+    ]},
+    { id: 'faq_capacity', message: 'Aluex X-spreaders are available from 2 t up to 50 t capacity. Straight spreaders range from 5 t to 25 t. Custom solutions beyond these ranges are also available.', options: [
+      { label: 'What makes Aluex products superior?', next: 'superior' },
+      { label: 'Request a quote',                     next: 'go_quote' },
+      { label: '← Back to FAQ',                  next: 'faq' }
+    ]},
+    { id: 'faq_order', message: 'To place an order, start by requesting a quote. Our team will get back to you with pricing and lead times based on your specific requirements.', options: [
+      { label: 'Request a quote', next: 'go_quote' },
+      { label: '← Back to FAQ', next: 'faq' }
+    ]},
+    { id: 'superior', message: 'Aluex products are manufactured from aircraft-grade aluminium alloy, making them significantly lighter than steel alternatives while maintaining superior strength. CE certified and trusted by lifting professionals worldwide.', options: [
+      { label: 'Tell me more',              next: 'superior_more' },
+      { label: 'Request a quote',           next: 'go_quote' },
+      { label: '← Back to main menu', next: 'start' }
+    ]},
+    { id: 'superior_more', message: 'Key advantages: Up to 70% lighter than steel · Corrosion resistant · CE certified · Custom reach lengths available · Fast delivery', options: [
+      { label: 'Request a quote',           next: 'go_quote' },
+      { label: '← Back to main menu', next: 'start' }
+    ]},
+    { id: 'contact', message: 'You can reach our team at info@aluexbeams.com. We typically respond within one business day. Alternatively, request a quote and we will contact you with all the details.', options: [
+      { label: 'Request a quote',           next: 'go_quote' },
+      { label: '← Back to main menu', next: 'start' }
+    ]}
+  ];
+
+  let chatFlow    = DEFAULT_CHAT_FLOW;
+  let chatFlowMap = buildChatMap(DEFAULT_CHAT_FLOW);
+
+  function buildChatMap(flow) {
+    const map = {};
+    flow.forEach(n => { map[n.id] = n; });
+    return map;
+  }
+
+  (function loadChatFlow() {
+    try {
+      const raw = localStorage.getItem('chat_flow');
+      if (raw) { chatFlow = JSON.parse(raw); chatFlowMap = buildChatMap(chatFlow); }
+    } catch(e) {}
+  })();
+
+  function setMode(mode) {
+    const isChat = mode === 'chat';
+    document.getElementById('mode-video-btn').classList.toggle('active', !isChat);
+    document.getElementById('mode-chat-btn').classList.toggle('active', isChat);
+    document.getElementById('progress-inner').style.display = isChat ? 'none' : '';
+    document.getElementById('content-card').classList.toggle('chat-active', isChat);
+    if (isChat) {
+      document.getElementById('chat-messages').innerHTML = '';
+      document.getElementById('chat-options').innerHTML  = '';
+      showChatNode('start');
+    } else {
+      syncSectionVideo();
+    }
+  }
+
+  function showChatNode(nodeId) {
+    if (nodeId === 'go_quote') { setMode('video'); go('quote'); return; }
+    const node = chatFlowMap[nodeId] || chatFlowMap['start'];
+    if (!node) return;
+    addChatMsg(node.message, 'bot');
+    renderChatOptions(node.options || []);
+  }
+
+  function renderChatOptions(options) {
+    const wrap = document.getElementById('chat-options');
+    wrap.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'chat-opt-btn';
+      btn.textContent = opt.label;
+      btn.onclick = function() {
+        addChatMsg(opt.label, 'user');
+        wrap.innerHTML = '';
+        setTimeout(() => showChatNode(opt.next), 450);
+      };
+      wrap.appendChild(btn);
+    });
+  }
+
+  function addChatMsg(text, from) {
+    const msgs = document.getElementById('chat-messages');
+    const div  = document.createElement('div');
+    div.className   = 'chat-msg' + (from === 'user' ? ' chat-msg-user' : '');
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop  = msgs.scrollHeight;
+  }
 
   function hexToRgb(hex) {
     const r = parseInt(hex.slice(1,3),16);
@@ -761,6 +936,10 @@
     if (d.products && d.products.length) {
       window._remoteProducts = d.products;
       renderProducts();
+    }
+    if (d.chatFlow && d.chatFlow.length) {
+      chatFlow    = d.chatFlow;
+      chatFlowMap = buildChatMap(d.chatFlow);
     }
   });
 

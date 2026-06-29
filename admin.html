@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Product Overview</title>
+  <style>
+    /* Admin uses fixed brand colors so a broken color setting can always be fixed */
+    :root {
+      --a-primary: #3b79bd;
+      --a-primary-rgb: 59,121,189;
+      --a-dark: #2d6aaa;
+      --a-bg: #eef3f9;
+      --a-card: #ffffff;
+      --a-border: #e2e8f0;
+      --a-text: #1e293b;
+      --a-muted: #64748b;
+      --a-success: #22c55e;
+      --a-danger: #ef4444;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--a-bg); color: var(--a-text); min-height: 100vh; }
+
+    /* ── Login screen ───────────────────────── */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-card {
+      background: var(--a-card); border-radius: 20px; padding: 44px 40px;
+      box-shadow: 0 4px 6px rgba(0,0,0,.05), 0 16px 48px rgba(var(--a-primary-rgb),.12);
+      width: 100%; max-width: 400px;
+    }
+    .login-logo {
+      width: 52px; height: 52px; border-radius: 14px; background: var(--a-primary);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 24px;
+    }
+    .login-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .login-sub   { font-size: 14px; color: var(--a-muted); margin-bottom: 32px; }
+    .login-label { display: block; font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+    .login-input {
+      width: 100%; padding: 12px 14px;
+      border: 1.5px solid var(--a-border); border-radius: 9px;
+      font-size: 16px; font-family: inherit; outline: none; background: #f8fafc;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .login-input:focus { border-color: var(--a-primary); box-shadow: 0 0 0 3px rgba(var(--a-primary-rgb),.13); background: #fff; }
+    .login-btn {
+      width: 100%; margin-top: 22px; padding: 14px;
+      background: var(--a-primary); color: #fff;
+      border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all .2s;
+    }
+    .login-btn:hover { background: var(--a-dark); box-shadow: 0 5px 18px rgba(var(--a-primary-rgb),.4); }
+    .login-error { margin-top: 14px; padding: 10px 14px; background: #fef2f2; color: var(--a-danger); border-radius: 8px; font-size: 13px; font-weight: 500; display: none; }
+    .login-error.show { display: block; }
+    .default-pw-note { margin-top: 24px; padding: 12px 14px; background: rgba(var(--a-primary-rgb),.07); border-radius: 9px; font-size: 12.5px; color: var(--a-muted); line-height: 1.5; }
+    .default-pw-note strong { color: var(--a-primary); }
+
+    /* ── Admin shell ────────────────────────── */
+    #admin-shell { display: none; flex-direction: column; min-height: 100vh; }
+    #admin-shell.show { display: flex; }
+
+    .admin-header {
+      background: var(--a-card);
+      border-bottom: 1px solid var(--a-border);
+      padding: 0 28px;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .admin-header-left { display: flex; align-items: center; gap: 12px; }
+    .header-badge {
+      background: var(--a-primary); color: #fff;
+      font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 6px;
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    .admin-header h1 { font-size: 16px; font-weight: 700; color: var(--a-text); }
+    .admin-header-right { display: flex; align-items: center; gap: 10px; }
+    .hdr-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; text-decoration: none; transition: all .2s;
+    }
+    .hdr-btn-outline {
+      background: none; border: 1.5px solid var(--a-border); color: var(--a-muted);
+    }
+    .hdr-btn-outline:hover { border-color: var(--a-primary); color: var(--a-primary); background: rgba(var(--a-primary-rgb),.05); }
+    .hdr-btn-ghost { background: none; border: none; color: var(--a-muted); }
+    .hdr-btn-ghost:hover { color: var(--a-danger); }
+
+    /* ── Tabs ───────────────────────────────── */
+    .tab-bar {
+      background: var(--a-card); border-bottom: 1px solid var(--a-border);
+      padding: 0 28px; display: flex; gap: 4px;
+    }
+    .tab-btn {
+      padding: 14px 18px; font-size: 14px; font-weight: 600;
+      color: var(--a-muted); background: none; border: none; cursor: pointer;
+      border-bottom: 2px solid transparent; font-family: inherit;
+      transition: color .2s, border-color .2s; display: flex; align-items: center; gap: 7px;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--a-text); }
+    .tab-btn.active { color: var(--a-primary); border-bottom-color: var(--a-primary); }
+    .tab-btn svg { flex-shrink: 0; }
+
+    /* ── Admin body ─────────────────────────── */
+    .admin-body { flex: 1; padding: 32px 28px 120px; max-width: 860px; width: 100%; margin: 0 auto; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── Section blocks ─────────────────────── */
+    .a-section {
+      background: var(--a-card); border-radius: 16px; padding: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 16px rgba(var(--a-primary-rgb),.06);
+      margin-bottom: 20px;
+    }
+    .a-section-title {
+      font-size: 15px; font-weight: 700; color: var(--a-text);
+      margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+    }
+    .a-section-sub { font-size: 13px; color: var(--a-muted); margin-bottom: 20px; line-height: 1.5; }
+    .a-divider { height: 1px; background: var(--a-border); margin: 20px 0; }
+
+    /* ── Form elements ──────────────────────── */
+    .a-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .a-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    .a-grid.cols4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .a-field { display: flex; flex-direction: column; gap: 6px; }
+    .a-field.full { grid-column: 1 / -1; }
+
+    .a-label {
+      font-size: 11.5px; font-weight: 700; color: #475569;
+      text-transform: uppercase; letter-spacing: .07em;
+    }
+    .a-hint { font-size: 11.5px; color: var(--a-muted); margin-top: 4px; line-height: 1.4; }
+
+    .a-input {
+      padding: 11px 14px;
+      border: 1.5px solid var(--a-border); border-radius: 8px;
+      font-size: 16px; color: var(--a-text); background: #f8fafc;
+      font-family: inherit; outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .a-input:focus { border-color: var(--a-primary); box-shadow: 0 0 0 3px rgba(var(--a-primary-rgb),.13); background: #fff; }
+    .a-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+    /* Color rows */
+    .color-row { display: flex; align-items: center; gap: 10px; }
+    .color-swatch {
+      width: 44px; height: 44px; border-radius: 8px; border: 1.5px solid var(--a-border);
+      cursor: pointer; flex-shrink: 0; overflow: hidden; padding: 0;
+      background: none;
+    }
+    .color-swatch input[type="color"] {
+      width: 200%; height: 200%; margin: -50%; border: none; cursor: pointer;
+      background: none; padding: 0; outline: none;
+    }
+    .color-hex {
+      flex: 1; padding: 11px 14px;
+      border: 1.5px solid var(--a-border); border-radius: 8px;
+      font-size: 16px; font-family: 'Courier New', monospace;
+      color: var(--a-text); background: #f8fafc; outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .color-hex:focus { border-color: var(--a-primary); box-shadow: 0 0 0 3px rgba(var(--a-primary-rgb),.13); background: #fff; }
+
+    /* Color preview */
+    .color-preview-wrap { margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid var(--a-border); }
+    .color-preview-label { font-size: 12px; font-weight: 700; color: var(--a-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 14px; }
+    .preview-btns { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .prev-btn-solid {
+      padding: 11px 22px; border-radius: 9px; border: none; cursor: pointer;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+    }
+    .prev-btn-outline {
+      padding: 9px 22px; border-radius: 9px; cursor: pointer;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+      background: transparent;
+    }
+    .prev-bar-wrap { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+    .prev-bar-fill { height: 100%; border-radius: 99px; width: 65%; }
+
+    /* ── Video input groups ──────────────────── */
+    .video-group { display: flex; align-items: flex-start; gap: 16px; }
+    .video-num {
+      width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--a-primary-rgb),.1);
+      color: var(--a-primary); font-size: 14px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+    }
+    .video-group-body { flex: 1; }
+    .video-group-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+
+    /* ── Security ───────────────────────────── */
+    .notice {
+      padding: 12px 16px; border-radius: 9px; font-size: 13px; line-height: 1.5;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .notice-warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .notice-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    /* ── Save bar ───────────────────────────── */
+    .save-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--a-card); border-top: 1px solid var(--a-border);
+      padding: 16px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.06);
+      z-index: 50;
+    }
+    .save-bar-left { font-size: 13px; color: var(--a-muted); }
+    .save-bar-right { display: flex; gap: 10px; }
+
+    .btn-reset {
+      padding: 11px 20px; background: none; border: 1.5px solid var(--a-border);
+      color: var(--a-muted); border-radius: 9px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all .2s;
+    }
+    .btn-reset:hover { border-color: var(--a-danger); color: var(--a-danger); background: #fef2f2; }
+
+    .btn-save {
+      padding: 11px 28px; background: var(--a-primary); color: #fff;
+      border: none; border-radius: 9px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all .2s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-save:hover { background: var(--a-dark); box-shadow: 0 4px 16px rgba(var(--a-primary-rgb),.4); }
+
+    /* ── Toast ──────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1e293b; color: #fff; padding: 12px 22px; border-radius: 10px;
+      font-size: 14px; font-weight: 600; opacity: 0;
+      transition: opacity .25s, transform .25s; z-index: 200;
+      pointer-events: none; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success::before { content: '✓  '; color: var(--a-success); }
+    .toast.error::before   { content: '✕  '; color: var(--a-danger); }
+
+    /* ── Password change form ───────────────── */
+    .pw-form { max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+    .pw-btn {
+      padding: 12px 24px; background: var(--a-primary); color: #fff;
+      border: none; border-radius: 9px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all .2s; align-self: flex-start;
+    }
+    .pw-btn:hover { background: var(--a-dark); }
+    .pw-error { padding: 10px 14px; background: #fef2f2; color: var(--a-danger); border-radius: 8px; font-size: 13px; display: none; }
+    .pw-error.show { display: block; }
+    .pw-success { padding: 10px 14px; background: #f0fdf4; color: #16a34a; border-radius: 8px; font-size: 13px; display: none; }
+    .pw-success.show { display: block; }
+
+    /* ── Product admin form ─────────────────── */
+    .prod-admin-cat { margin-bottom: 24px; }
+    .prod-admin-cat:last-child { margin-bottom: 0; }
+
+    .prod-admin-cat-label {
+      font-size: 12px; font-weight: 800; color: var(--a-primary);
+      text-transform: uppercase; letter-spacing: .08em;
+      padding-bottom: 8px; margin-bottom: 12px;
+      border-bottom: 2px solid rgba(var(--a-primary-rgb),.15);
+    }
+
+    .prod-admin-row {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 12px 0; border-bottom: 1px solid var(--a-border);
+    }
+    .prod-admin-row:last-child { border-bottom: none; }
+
+    .prod-admin-name {
+      font-size: 13px; font-weight: 700; color: var(--a-text);
+      width: 110px; flex-shrink: 0; padding-top: 26px;
+    }
+
+    .prod-admin-fields {
+      flex: 1; display: grid;
+      grid-template-columns: 1fr 1fr 90px 90px;
+      gap: 10px;
+    }
+
+    /* ── Responsive ─────────────────────────── */
+    @media (max-width: 640px) {
+      .admin-body { padding: 20px 14px 110px; }
+      .tab-bar {
+        padding: 0 14px; gap: 0;
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: none; scrollbar-width: none;
+      }
+      .tab-bar::-webkit-scrollbar { display: none; }
+      .tab-btn { padding: 13px 14px; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+      /* Step labels 2×2, section titles 2-col, nav/form grids 1-col */
+      .a-grid.cols4 { grid-template-columns: 1fr 1fr; }
+      .a-grid.cols3 { grid-template-columns: 1fr 1fr; }
+      .a-grid       { grid-template-columns: 1fr; }
+      .a-field.full { grid-column: auto; }
+      .a-section    { padding: 20px 16px; }
+      .save-bar     { padding: 14px 16px; }
+      .save-bar-left { display: none; }
+      .admin-header { padding: 0 14px; }
+      .hdr-btn span { display: none; }
+      .login-card   { padding: 32px 20px; }
+      .pw-form      { max-width: 100%; }
+      .pw-btn       { width: 100%; align-self: stretch; }
+      .preview-btns { flex-direction: column; }
+      .prev-btn-solid, .prev-btn-outline { width: 100%; text-align: center; }
+      .prod-admin-row { flex-direction: column; gap: 8px; }
+      .prod-admin-name { padding-top: 0; width: auto; }
+      .prod-admin-fields { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 420px) {
+      .login-card { padding: 28px 16px; }
+      .login-title { font-size: 19px; }
+      .a-grid.cols4, .a-grid.cols3 { grid-template-columns: 1fr; }
+      .tab-btn svg { display: none; }
+      .video-group { flex-direction: column; gap: 8px; }
+      .admin-header h1 { font-size: 14px; }
+      .color-hex { font-size: 14px; }
+      .prod-admin-fields { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ LOGIN SCREEN ══════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <div class="login-title">Admin Login</div>
+    <div class="login-sub">Sign in to manage videos, text, and colors.</div>
+
+    <form onsubmit="doLogin(event)">
+      <label class="login-label" for="lp">Password</label>
+      <input class="login-input" id="lp" type="password" placeholder="Enter your password" autocomplete="current-password">
+      <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+      <button type="submit" class="login-btn">Sign In</button>
+    </form>
+
+    <div class="default-pw-note">
+      Default password is <strong>admin</strong>. Change it in the Security tab after signing in.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN SHELL ══════════════════ -->
+<div id="admin-shell">
+  <header class="admin-header">
+    <div class="admin-header-left">
+      <span class="header-badge">Admin</span>
+      <h1>Site Manager</h1>
+    </div>
+    <div class="admin-header-right">
+      <a href="index.html" target="_blank" class="hdr-btn hdr-btn-outline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>View Site</span>
+      </a>
+      <button class="hdr-btn hdr-btn-ghost" onclick="doLogout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Tab bar -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="videos" onclick="switchTab('videos')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Videos
+    </button>
+    <button class="tab-btn" data-tab="content" onclick="switchTab('content')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+      Content
+    </button>
+    <button class="tab-btn" data-tab="products" onclick="switchTab('products')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Products
+    </button>
+    <button class="tab-btn" data-tab="colors" onclick="switchTab('colors')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+      Colors
+    </button>
+    <button class="tab-btn" data-tab="security" onclick="switchTab('security')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Security
+    </button>
+    <button class="tab-btn" data-tab="shopify" onclick="switchTab('shopify')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
+      Shopify
+    </button>
+  </nav>
+
+  <div class="admin-body">
+
+    <!-- ══ VIDEOS tab ══════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-videos">
+
+      <div class="a-section">
+        <div class="a-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Video Sources
+        </div>
+        <div class="a-section-sub">
+          Enter a relative filename (e.g. <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:12px;">intro.mp4</code>) if the video is in the same folder as index.html, or a full URL for online videos. Leave blank to show the placeholder.
+        </div>
+
+        <!-- Video 1 -->
+        <div class="video-group">
+          <div class="video-num">1</div>
+          <div class="video-group-body">
+            <div class="video-group-title">Intro</div>
+            <input class="a-input" type="text" id="a-video1" placeholder="intro.mp4  or  https://example.com/video.mp4">
+          </div>
+        </div>
+
+        <div class="a-divider"></div>
+
+        <!-- Video 2 -->
+        <div class="video-group">
+          <div class="video-num">2</div>
+          <div class="video-group-body">
+            <div class="video-group-title">X-beams</div>
+            <input class="a-input" type="text" id="a-video2" placeholder="xbeams.mp4  or  https://example.com/video.mp4">
+          </div>
+        </div>
+
+        <div class="a-divider"></div>
+
+        <!-- Video 3 -->
+        <div class="video-group">
+          <div class="video-num">3</div>
+          <div class="video-group-body">
+            <div class="video-group-title">Spreader Bars</div>
+            <input class="a-input" type="text" id="a-video3" placeholder="spreader.mp4  or  https://example.com/video.mp4">
+          </div>
+        </div>
+      </div>
+
+      <div class="notice notice-info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div>Supported formats: MP4, WebM, OGG. For best compatibility across browsers, use <strong>MP4 (H.264)</strong>.</div>
+      </div>
+    </div>
+
+    <!-- ══ CONTENT tab ═════════════════════════════════ -->
+    <div class="tab-panel" id="tab-content">
+
+      <!-- Page -->
+      <div class="a-section">
+        <div class="a-section-title">Page</div>
+        <div class="a-field">
+          <label class="a-label">Browser Tab Title</label>
+          <input class="a-input" type="text" id="a-pageTitle" placeholder="Product Overview & Quote">
+        </div>
+      </div>
+
+      <!-- Progress steps -->
+      <div class="a-section">
+        <div class="a-section-title">Progress Step Labels</div>
+        <div class="a-section-sub">The four labels shown in the progress bar at the top.</div>
+        <div class="a-grid cols4">
+          <div class="a-field">
+            <label class="a-label">Step 1</label>
+            <input class="a-input" type="text" id="a-step1Lbl" placeholder="Intro">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Step 2</label>
+            <input class="a-input" type="text" id="a-step2Lbl" placeholder="X-beams">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Step 3</label>
+            <input class="a-input" type="text" id="a-step3Lbl" placeholder="Spreader">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Step 4</label>
+            <input class="a-input" type="text" id="a-step4Lbl" placeholder="Quote">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section titles -->
+      <div class="a-section">
+        <div class="a-section-title">Section Titles</div>
+        <div class="a-section-sub">Headings shown above each video.</div>
+        <div class="a-grid cols3">
+          <div class="a-field">
+            <label class="a-label">Video 1</label>
+            <input class="a-input" type="text" id="a-sec1Title" placeholder="Introduction">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Video 2</label>
+            <input class="a-input" type="text" id="a-sec2Title" placeholder="X-beams">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Video 3</label>
+            <input class="a-input" type="text" id="a-sec3Title" placeholder="Spreader Bars">
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="a-section">
+        <div class="a-section-title">Navigation Buttons</div>
+        <div class="a-section-sub">Button labels shown below each video. Changing these only updates the text — navigation destinations stay the same.</div>
+
+        <div style="font-size:12px;font-weight:700;color:var(--a-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Under Video 1 (Intro)</div>
+        <div class="a-grid cols3">
+          <div class="a-field">
+            <label class="a-label">Button 1</label>
+            <input class="a-input" type="text" id="a-v1b1" placeholder="X-beams">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 2</label>
+            <input class="a-input" type="text" id="a-v1b2" placeholder="Spreader bars">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 3</label>
+            <input class="a-input" type="text" id="a-v1b3" placeholder="Request quote">
+          </div>
+        </div>
+
+        <div class="a-divider"></div>
+
+        <div style="font-size:12px;font-weight:700;color:var(--a-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Under Video 2 (X-beams)</div>
+        <div class="a-grid">
+          <div class="a-field">
+            <label class="a-label">Button 1</label>
+            <input class="a-input" type="text" id="a-v2b1" placeholder="Spreader bars">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 2</label>
+            <input class="a-input" type="text" id="a-v2b2" placeholder="Request quote">
+          </div>
+        </div>
+
+        <div class="a-divider"></div>
+
+        <div style="font-size:12px;font-weight:700;color:var(--a-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Under Video 3 (Spreader Bars)</div>
+        <div class="a-grid">
+          <div class="a-field">
+            <label class="a-label">Button 1</label>
+            <input class="a-input" type="text" id="a-v3b1" placeholder="X-beams">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 2</label>
+            <input class="a-input" type="text" id="a-v3b2" placeholder="Request quote">
+          </div>
+        </div>
+      </div>
+
+      <!-- Quote form text -->
+      <div class="a-section">
+        <div class="a-section-title">Quote Form</div>
+        <div class="a-grid">
+          <div class="a-field">
+            <label class="a-label">Form Title</label>
+            <input class="a-input" type="text" id="a-formTitle" placeholder="Request a Quote">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Submit Button Text</label>
+            <input class="a-input" type="text" id="a-submitBtn" placeholder="Submit Quote Request →">
+          </div>
+          <div class="a-field full">
+            <label class="a-label">Form Subtitle</label>
+            <textarea class="a-input a-textarea" id="a-formSub" placeholder="Fill in your details and we'll get back to you shortly."></textarea>
+          </div>
+          <div class="a-field full">
+            <label class="a-label">Form Submission URL <span style="font-weight:400;color:#94a3b8">(Google Apps Script web app URL)</span></label>
+            <input class="a-input" type="url" id="a-formEndpoint" placeholder="https://script.google.com/macros/s/…/exec">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Products Section Label</label>
+            <input class="a-input" type="text" id="a-prodSectionLabel" placeholder="Products of Interest">
+          </div>
+          <div class="a-field full">
+            <label class="a-label">Product Info Subtitle</label>
+            <input class="a-input" type="text" id="a-prodInfoText" placeholder="For complete technical specifications…">
+          </div>
+          <div class="a-field full">
+            <label class="a-label">Product Info Link <span style="font-weight:400;color:#94a3b8">(optional — shows "Learn more →" button)</span></label>
+            <input class="a-input" type="url" id="a-prodInfoLink" placeholder="https://…">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PRODUCTS tab ═══════════════════════════════ -->
+    <div class="tab-panel" id="tab-products">
+      <div class="a-section">
+        <div class="a-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Product Cards
+        </div>
+        <div class="a-section-sub">
+          Set the image and button link for each product. Use a filename (e.g. <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:12px;">aluex2.jpg</code>) if the image is in the same folder as index.html, or a full URL. Capacity and Reach display on the card.
+        </div>
+        <div id="products-form-root"></div>
+      </div>
+    </div>
+
+    <!-- ══ COLORS tab ══════════════════════════════════ -->
+    <div class="tab-panel" id="tab-colors">
+
+      <div class="a-section">
+        <div class="a-section-title">Brand Colors</div>
+        <div class="a-section-sub">Changes apply immediately on the main site after saving.</div>
+
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="a-field">
+            <label class="a-label">Primary Color</label>
+            <div class="color-row">
+              <button class="color-swatch" onclick="document.getElementById('cp-primary').click()">
+                <input type="color" id="cp-primary" oninput="syncColor('primary',this.value)">
+              </button>
+              <input class="color-hex" type="text" id="ch-primary" placeholder="#3b79bd" maxlength="7" oninput="syncHex('primary',this.value)" onblur="validateHex('primary')">
+            </div>
+            <div class="a-hint">Used for buttons, progress bar, active states, and interactive highlights.</div>
+          </div>
+
+          <div class="a-field">
+            <label class="a-label">Page Background Color</label>
+            <div class="color-row">
+              <button class="color-swatch" onclick="document.getElementById('cp-bg').click()">
+                <input type="color" id="cp-bg" oninput="syncColor('bg',this.value)">
+              </button>
+              <input class="color-hex" type="text" id="ch-bg" placeholder="#eef3f9" maxlength="7" oninput="syncHex('bg',this.value)" onblur="validateHex('bg')">
+            </div>
+            <div class="a-hint">The background color behind the cards.</div>
+          </div>
+
+          <div class="a-field">
+            <label class="a-label">Button Text Color</label>
+            <div class="color-row">
+              <button class="color-swatch" onclick="document.getElementById('cp-btntext').click()">
+                <input type="color" id="cp-btntext" oninput="syncColor('btntext',this.value)">
+              </button>
+              <input class="color-hex" type="text" id="ch-btntext" placeholder="#ffffff" maxlength="7" oninput="syncHex('btntext',this.value)" onblur="validateHex('btntext')">
+            </div>
+            <div class="a-hint">Text color on solid buttons. Use white (#ffffff) for dark primary colors.</div>
+          </div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="color-preview-wrap" style="margin-top:24px;">
+          <div class="color-preview-label">Live Preview</div>
+          <div class="preview-btns">
+            <button class="prev-btn-solid" id="prev-solid">Solid button</button>
+            <button class="prev-btn-outline" id="prev-outline">Outline button</button>
+          </div>
+          <div class="prev-bar-wrap">
+            <div class="prev-bar-fill" id="prev-bar"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ SECURITY tab ════════════════════════════════ -->
+    <div class="tab-panel" id="tab-security">
+
+      <div class="a-section">
+        <div class="a-section-title">Change Password</div>
+        <div class="a-section-sub">Update the password used to access this admin panel.</div>
+
+        <div class="pw-form">
+          <div class="a-field">
+            <label class="a-label">Current Password</label>
+            <input class="a-input" type="password" id="pw-cur" autocomplete="current-password">
+          </div>
+          <div class="a-field">
+            <label class="a-label">New Password</label>
+            <input class="a-input" type="password" id="pw-new" autocomplete="new-password">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Confirm New Password</label>
+            <input class="a-input" type="password" id="pw-conf" autocomplete="new-password">
+          </div>
+          <div class="pw-error" id="pw-error"></div>
+          <div class="pw-success" id="pw-success">Password updated successfully.</div>
+          <button class="pw-btn" onclick="changePassword()">Update Password</button>
+        </div>
+      </div>
+
+      <div class="notice notice-warn" style="margin-top:16px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>Password protection is client-side only. Anyone with browser dev tools can bypass it. Do not use this to protect truly sensitive information — it is intended to prevent casual access.</div>
+      </div>
+
+    </div>
+
+    <!-- ══ SHOPIFY tab ════════════════════════════════ -->
+    <div class="tab-panel" id="tab-shopify">
+      <div class="a-section">
+        <div class="a-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
+          Shopify Embed Code
+        </div>
+        <div class="a-section-sub">
+          Click <strong>Generate</strong> to create a script tag with all your current settings baked in. Replace the existing <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:12px">&lt;script&gt;</code> tag in your Shopify <strong>theme.liquid</strong> with this new one. Do this whenever you change settings.
+        </div>
+        <button class="btn-save" style="margin-bottom:16px;" onclick="generateEmbedCode()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
+          Generate embed code
+        </button>
+        <div class="a-field full">
+          <label class="a-label">Copy this into Shopify theme.liquid (before &lt;/body&gt;)</label>
+          <textarea class="a-input a-textarea" id="embed-output" rows="7" readonly style="font-family:monospace;font-size:12px;resize:vertical;" placeholder="Click Generate above…"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.admin-body -->
+
+  <!-- Save bar (not shown on Security tab) -->
+  <div class="save-bar" id="save-bar">
+    <span class="save-bar-left">Changes are saved to this browser's local storage and applied instantly on the main site.</span>
+    <div class="save-bar-right">
+      <button class="btn-reset" onclick="resetToDefaults()">Reset to defaults</button>
+      <button class="btn-save" onclick="saveSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+        Save Changes
+      </button>
+    </div>
+  </div>
+
+</div><!-- /#admin-shell -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── Product data (mirrors index.html) ───────── */
+  const DEFAULT_PRODUCTS = [
+    { id:'p1',  cat:'X-Spreaders',        name:'Aluex 2',      cap:'2 t',   reach:'—', img:'', link:'' },
+    { id:'p2',  cat:'X-Spreaders',        name:'Aluex 5',      cap:'5 t',   reach:'—', img:'', link:'' },
+    { id:'p3',  cat:'X-Spreaders',        name:'Aluex 10',     cap:'10 t',  reach:'—', img:'', link:'' },
+    { id:'p4',  cat:'X-Spreaders',        name:'Aluex 10+',    cap:'10+ t', reach:'—', img:'', link:'' },
+    { id:'p5',  cat:'X-Spreaders',        name:'Aluex 15',     cap:'15 t',  reach:'—', img:'', link:'' },
+    { id:'p6',  cat:'X-Spreaders',        name:'Aluex 18+',    cap:'18+ t', reach:'—', img:'', link:'' },
+    { id:'p7',  cat:'X-Spreaders',        name:'Aluex 20',     cap:'20 t',  reach:'—', img:'', link:'' },
+    { id:'p8',  cat:'X-Spreaders',        name:'Aluex 30',     cap:'30 t',  reach:'—', img:'', link:'' },
+    { id:'p9',  cat:'X-Spreaders',        name:'Aluex 50',     cap:'50 t',  reach:'—', img:'', link:'' },
+    { id:'p10', cat:'Straight Spreaders', name:'Aluex STR5',   cap:'5 t',   reach:'—', img:'', link:'' },
+    { id:'p11', cat:'Straight Spreaders', name:'Aluex STR9',   cap:'9 t',   reach:'—', img:'', link:'' },
+    { id:'p12', cat:'Straight Spreaders', name:'Aluex STR9+',  cap:'9+ t',  reach:'—', img:'', link:'' },
+    { id:'p13', cat:'Straight Spreaders', name:'Aluex STR15',  cap:'15 t',  reach:'—', img:'', link:'' },
+    { id:'p14', cat:'Straight Spreaders', name:'Aluex STR25',  cap:'25 t',  reach:'—', img:'', link:'' },
+    { id:'p15', cat:'Accessories',        name:'Aluex Link 3', cap:'3 t',   reach:'—', img:'', link:'' },
+    { id:'p16', cat:'Accessories',        name:'Aluex Link 10',cap:'10 t',  reach:'—', img:'', link:'' },
+    { id:'p17', cat:'Accessories',        name:'Aluex Link 17',cap:'17 t',  reach:'—', img:'', link:'' },
+    { id:'p18', cat:'Accessories',        name:'Aluex Link 25',cap:'25 t',  reach:'—', img:'', link:'' },
+    { id:'p19', cat:'Accessories',        name:'Aluex Lifter', cap:'—',     reach:'—', img:'', link:'' },
+  ];
+
+  function buildProductsForm() {
+    const root = document.getElementById('products-form-root');
+    if (!root) return;
+    const CATS = ['X-Spreaders', 'Straight Spreaders', 'Accessories'];
+    root.innerHTML = CATS.map(cat => {
+      const items = DEFAULT_PRODUCTS.filter(p => p.cat === cat);
+      return `<div class="prod-admin-cat">
+        <div class="prod-admin-cat-label">${cat}</div>
+        ${items.map(p => `
+          <div class="prod-admin-row">
+            <div class="prod-admin-name">${p.name}</div>
+            <div class="prod-admin-fields">
+              <div class="a-field">
+                <label class="a-label">Image</label>
+                <input class="a-input" type="text" id="pa-${p.id}-img" placeholder="photo.jpg or https://…">
+              </div>
+              <div class="a-field">
+                <label class="a-label">Button Link</label>
+                <input class="a-input" type="text" id="pa-${p.id}-link" placeholder="https://…">
+              </div>
+              <div class="a-field">
+                <label class="a-label">Capacity</label>
+                <input class="a-input" type="text" id="pa-${p.id}-cap" placeholder="${p.cap}">
+              </div>
+              <div class="a-field">
+                <label class="a-label">Reach</label>
+                <input class="a-input" type="text" id="pa-${p.id}-reach" placeholder="—">
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    }).join('');
+  }
+
+  function initProducts() {
+    let saved = [];
+    try { saved = JSON.parse(localStorage.getItem('product_data') || '[]'); } catch(e) {}
+    const map = Object.fromEntries(saved.map(p => [p.id, p]));
+    DEFAULT_PRODUCTS.forEach(p => {
+      const s = map[p.id] || {};
+      const set = (f, v) => { const el = document.getElementById('pa-' + p.id + '-' + f); if (el) el.value = v; };
+      set('img',   s.img   ?? '');
+      set('link',  s.link  ?? '');
+      set('cap',   s.cap   != null ? s.cap   : p.cap);
+      set('reach', s.reach != null ? s.reach : p.reach);
+    });
+  }
+
+  function collectProducts() {
+    return DEFAULT_PRODUCTS.map(p => {
+      const g = f => { const el = document.getElementById('pa-' + p.id + '-' + f); return el ? el.value : ''; };
+      return { id: p.id, img: g('img'), link: g('link'), cap: g('cap') || p.cap, reach: g('reach') || p.reach };
+    });
+  }
+
+  /* ── Crypto helpers ───────────────────────────── */
+  const DEFAULT_PW_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // SHA-256("admin")
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  /* ── Auth ─────────────────────────────────────── */
+  async function doLogin(e) {
+    e.preventDefault();
+    const pw   = document.getElementById('lp').value;
+    const hash = await sha256(pw);
+    const stored = localStorage.getItem('admin_pw_hash') || DEFAULT_PW_HASH;
+    if (hash === stored) {
+      sessionStorage.setItem('admin_auth', '1');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-shell').classList.add('show');
+      initAdmin();
+    } else {
+      const err = document.getElementById('login-error');
+      err.classList.add('show');
+      setTimeout(() => err.classList.remove('show'), 3500);
+    }
+  }
+
+  function doLogout() {
+    sessionStorage.removeItem('admin_auth');
+    location.reload();
+  }
+
+  /* Auto-restore session on page load */
+  if (sessionStorage.getItem('admin_auth') === '1') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-shell').classList.add('show');
+    document.addEventListener('DOMContentLoaded', initAdmin);
+  }
+
+  /* ── Settings ─────────────────────────────────── */
+  const DEFAULTS = {
+    primaryColor: '#3b79bd', bgColor: '#eef3f9', btnTextColor: '#ffffff',
+    video1: '', video2: '', video3: '',
+    pageTitle:  'Product Overview & Quote',
+    step1Lbl: 'Intro', step2Lbl: 'X-beams', step3Lbl: 'Spreader', step4Lbl: 'Quote',
+    sec1Title: 'Introduction', sec2Title: 'X-beams', sec3Title: 'Spreader Bars',
+    v1b1: 'X-beams',      v1b2: 'Spreader bars', v1b3: 'Request quote',
+    v2b1: 'Spreader bars', v2b2: 'Request quote',
+    v3b1: 'X-beams',      v3b2: 'Request quote',
+    formTitle: 'Request a Quote',
+    formSub:   "Fill in your details and we'll get back to you shortly.",
+    submitBtn: 'Submit Quote Request →',
+    formEndpoint: '',
+    prodSectionLabel: 'Products of Interest',
+    prodInfoText: 'For complete technical specifications and data sheets, see our full product catalogue.',
+    prodInfoLink: ''
+  };
+
+  let current = { ...DEFAULTS };
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem('site_settings');
+      if (raw) current = { ...DEFAULTS, ...JSON.parse(raw) };
+    } catch(e) {}
+  }
+
+  function initAdmin() {
+    loadSettings();
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    set('a-video1',   current.video1);
+    set('a-video2',   current.video2);
+    set('a-video3',   current.video3);
+    set('a-pageTitle', current.pageTitle);
+    set('a-step1Lbl', current.step1Lbl); set('a-step2Lbl', current.step2Lbl);
+    set('a-step3Lbl', current.step3Lbl); set('a-step4Lbl', current.step4Lbl);
+    set('a-sec1Title', current.sec1Title);
+    set('a-sec2Title', current.sec2Title);
+    set('a-sec3Title', current.sec3Title);
+    set('a-v1b1', current.v1b1); set('a-v1b2', current.v1b2); set('a-v1b3', current.v1b3);
+    set('a-v2b1', current.v2b1); set('a-v2b2', current.v2b2);
+    set('a-v3b1', current.v3b1); set('a-v3b2', current.v3b2);
+    set('a-formTitle',        current.formTitle);
+    set('a-formSub',          current.formSub);
+    set('a-submitBtn',        current.submitBtn);
+    set('a-formEndpoint',     current.formEndpoint);
+    set('a-prodSectionLabel', current.prodSectionLabel);
+    set('a-prodInfoText',     current.prodInfoText);
+    set('a-prodInfoLink',     current.prodInfoLink);
+
+    // Colors
+    setColorInputs('primary', current.primaryColor);
+    setColorInputs('bg',      current.bgColor);
+    setColorInputs('btntext', current.btnTextColor);
+    updateColorPreview();
+
+    // Products
+    buildProductsForm();
+    initProducts();
+  }
+
+  function collectSettings() {
+    const g = id => (document.getElementById(id) || {}).value || '';
+    return {
+      video1: g('a-video1'), video2: g('a-video2'), video3: g('a-video3'),
+      pageTitle:  g('a-pageTitle'),
+      step1Lbl: g('a-step1Lbl'), step2Lbl: g('a-step2Lbl'),
+      step3Lbl: g('a-step3Lbl'), step4Lbl: g('a-step4Lbl'),
+      sec1Title: g('a-sec1Title'), sec2Title: g('a-sec2Title'), sec3Title: g('a-sec3Title'),
+      v1b1: g('a-v1b1'), v1b2: g('a-v1b2'), v1b3: g('a-v1b3'),
+      v2b1: g('a-v2b1'), v2b2: g('a-v2b2'),
+      v3b1: g('a-v3b1'), v3b2: g('a-v3b2'),
+      formTitle: g('a-formTitle'), formSub: g('a-formSub'), submitBtn: g('a-submitBtn'),
+      formEndpoint: g('a-formEndpoint'),
+      prodSectionLabel: g('a-prodSectionLabel'), prodInfoText: g('a-prodInfoText'), prodInfoLink: g('a-prodInfoLink'),
+      primaryColor: g('ch-primary') || DEFAULTS.primaryColor,
+      bgColor:      g('ch-bg')      || DEFAULTS.bgColor,
+      btnTextColor: g('ch-btntext') || DEFAULTS.btnTextColor,
+    };
+  }
+
+  function saveSettings() {
+    const s = collectSettings();
+    localStorage.setItem('site_settings', JSON.stringify(s));
+    current = s;
+    localStorage.setItem('product_data', JSON.stringify(collectProducts()));
+    showToast('Settings saved!', 'success');
+  }
+
+  function resetToDefaults() {
+    if (!confirm('Reset all settings to defaults? This cannot be undone.')) return;
+    localStorage.removeItem('site_settings');
+    localStorage.removeItem('product_data');
+    current = { ...DEFAULTS };
+    initAdmin();
+    showToast('Settings reset to defaults.', 'success');
+  }
+
+  /* ── Tabs ─────────────────────────────────────── */
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    document.getElementById('save-bar').style.display = (name === 'security' || name === 'shopify') ? 'none' : '';
+  }
+
+  /* ── Color pickers ────────────────────────────── */
+  const colorKeys = { primary: 'primaryColor', bg: 'bgColor', btntext: 'btnTextColor' };
+
+  function setColorInputs(key, hex) {
+    document.getElementById('cp-' + key).value = hex;
+    document.getElementById('ch-' + key).value = hex;
+  }
+
+  function syncColor(key, hex) {
+    document.getElementById('ch-' + key).value = hex;
+    updateColorPreview();
+  }
+
+  function syncHex(key, hex) {
+    if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+      document.getElementById('cp-' + key).value = hex;
+      updateColorPreview();
+    }
+  }
+
+  function validateHex(key) {
+    const el = document.getElementById('ch-' + key);
+    if (!/^#[0-9a-fA-F]{6}$/.test(el.value)) {
+      el.value = current[colorKeys[key]];
+      document.getElementById('cp-' + key).value = el.value;
+    }
+    updateColorPreview();
+  }
+
+  function updateColorPreview() {
+    const primary = document.getElementById('ch-primary').value || DEFAULTS.primaryColor;
+    const btnText = document.getElementById('ch-btntext').value || DEFAULTS.btnTextColor;
+
+    const solid   = document.getElementById('prev-solid');
+    const outline = document.getElementById('prev-outline');
+    const bar     = document.getElementById('prev-bar');
+
+    solid.style.background = primary;
+    solid.style.color      = btnText;
+    solid.style.border     = 'none';
+
+    outline.style.border  = `2px solid ${primary}`;
+    outline.style.color   = primary;
+    outline.style.background = 'transparent';
+
+    bar.style.background = `linear-gradient(90deg, ${primary} 0%, ${shiftHex(primary, 45)} 100%)`;
+  }
+
+  function shiftHex(hex, amt) {
+    try {
+      const clamp = v => Math.max(0, Math.min(255, v));
+      const r = clamp(parseInt(hex.slice(1,3),16) + amt);
+      const g = clamp(parseInt(hex.slice(3,5),16) + amt);
+      const b = clamp(parseInt(hex.slice(5,7),16) + amt);
+      return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+    } catch(e) { return hex; }
+  }
+
+  /* ── Password change ──────────────────────────── */
+  async function changePassword() {
+    const curVal  = document.getElementById('pw-cur').value;
+    const newVal  = document.getElementById('pw-new').value;
+    const confVal = document.getElementById('pw-conf').value;
+    const errEl   = document.getElementById('pw-error');
+    const okEl    = document.getElementById('pw-success');
+
+    errEl.classList.remove('show');
+    okEl.classList.remove('show');
+
+    const curHash    = await sha256(curVal);
+    const storedHash = localStorage.getItem('admin_pw_hash') || DEFAULT_PW_HASH;
+
+    if (curHash !== storedHash) {
+      errEl.textContent = 'Current password is incorrect.';
+      errEl.classList.add('show'); return;
+    }
+    if (newVal.length < 6) {
+      errEl.textContent = 'New password must be at least 6 characters.';
+      errEl.classList.add('show'); return;
+    }
+    if (newVal !== confVal) {
+      errEl.textContent = 'New passwords do not match.';
+      errEl.classList.add('show'); return;
+    }
+
+    localStorage.setItem('admin_pw_hash', await sha256(newVal));
+    document.getElementById('pw-cur').value  = '';
+    document.getElementById('pw-new').value  = '';
+    document.getElementById('pw-conf').value = '';
+    okEl.classList.add('show');
+  }
+
+  /* ── Toast ────────────────────────────────────── */
+  let toastTimer;
+  function generateEmbedCode() {
+    const s = collectSettings();
+    const p = collectProducts();
+    const payload = { settings: s, products: p };
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    const origin = window.location.origin;
+    const color  = s.primaryColor || '#3b79bd';
+    const code   = `<script\n  src="${origin}/embed.js"\n  data-label="Request a Quote"\n  data-color="${color}"\n  data-settings="${b64}"\n><\/script>`;
+    const out = document.getElementById('embed-output');
+    if (out) {
+      out.value = code;
+      out.select();
+      try { document.execCommand('copy'); showToast('Embed code copied to clipboard!', 'success'); }
+      catch(_) { showToast('Embed code generated — copy it above.', 'success'); }
+    }
+  }
+
+  function showToast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.className = 'toast', 2600);
+  }
+</script>
+</body>
+</html>

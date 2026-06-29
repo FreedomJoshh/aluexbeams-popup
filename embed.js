@@ -9,6 +9,11 @@
   var COLOR        = (el && el.getAttribute('data-color'))    || '#3b79bd';
   var SETTINGS_B64 = (el && el.getAttribute('data-settings')) || '';
 
+  /* ── Stats storage (Shopify-side) ───────────── */
+  var STATS_KEY = 'ax_stats';
+  function getStats() { try { return JSON.parse(localStorage.getItem(STATS_KEY) || '{}'); } catch(_) { return {}; } }
+  function saveStats(s) { try { localStorage.setItem(STATS_KEY, JSON.stringify(s)); } catch(_) {} }
+
   /* ── Styles ─────────────────────────────────── */
   var css = [
     '#ax-bubble{',
@@ -111,5 +116,28 @@
         );
       } catch (_) {}
     });
+  }
+
+  /* ── Receive stats from iframe & store here ─── */
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.type !== 'AX_STAT') return;
+    var s = getStats();
+    if (e.data.event === 'session')     s.sessions     = (s.sessions     || 0) + 1;
+    if (e.data.event === 'interaction') s.interactions = (s.interactions || 0) + 1;
+    if (e.data.event === 'submission')  {
+      s.submissions = (s.submissions || 0) + 1;
+      s.log = s.log || [];
+      s.log.unshift(e.data.data);
+      if (s.log.length > 500) s.log.length = 500;
+    }
+    saveStats(s);
+  });
+
+  /* ── Respond to admin stats sync request ─────── */
+  if (window.location.hash === '#aluexbeams-stats' && window.opener) {
+    try {
+      window.opener.postMessage({ type: 'AX_STATS_RESPONSE', data: getStats() }, '*');
+      setTimeout(function () { try { window.close(); } catch (_) {} }, 800);
+    } catch (_) {}
   }
 })();

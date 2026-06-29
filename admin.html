@@ -841,6 +841,21 @@
       </div>
 
       <div class="a-section">
+        <div class="a-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-3.8"/></svg>
+          Sync from Shopify
+        </div>
+        <div class="a-section-sub">Pull stats from your Shopify popup visitors. Enter your store URL and click <strong>Sync</strong> — a small window will open briefly to fetch the data, then close automatically.</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input class="a-input" type="url" id="stat-store-url" placeholder="https://yourstore.myshopify.com" style="flex:1">
+          <button class="btn-save" onclick="syncFromShopify()" style="white-space:nowrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-3.8"/></svg>
+            Sync
+          </button>
+        </div>
+      </div>
+
+      <div class="a-section">
         <div class="a-section-title" style="justify-content:space-between;align-items:center">
           <span style="display:flex;align-items:center;gap:8px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -1147,7 +1162,7 @@
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
     document.getElementById('save-bar').style.display = (name === 'security' || name === 'shopify' || name === 'stats') ? 'none' : '';
-    if (name === 'stats') loadStats();
+    if (name === 'stats') { loadStats(); loadStatStoreUrl(); }
   }
 
   /* ── Statistics ─────────────────────────────────────── */
@@ -1204,6 +1219,43 @@
     localStorage.removeItem('ax_stats');
     loadStats();
     showToast('Statistics cleared.', 'success');
+  }
+
+  function syncFromShopify() {
+    const el  = document.getElementById('stat-store-url');
+    const url = el ? el.value.trim() : '';
+    if (!url) { showToast('Enter your Shopify store URL first.', 'error'); return; }
+    try { localStorage.setItem('ax_stat_store_url', url); } catch(_) {}
+    const syncUrl = url.replace(/\/$/, '').replace(/#.*/, '') + '#aluexbeams-stats';
+    window.open(syncUrl, 'ax-sync-win', 'width=500,height=400,left=300,top=200');
+    showToast('Opening your store to fetch stats…', 'success');
+  }
+
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.type !== 'AX_STATS_RESPONSE') return;
+    const remote = e.data.data || {};
+    let local = {};
+    try { local = JSON.parse(localStorage.getItem('ax_stats') || '{}'); } catch(_) {}
+    const tsSet = new Set();
+    const mergedLog = [...(remote.log || []), ...(local.log || [])].filter(function(entry) {
+      if (tsSet.has(entry.ts)) return false;
+      tsSet.add(entry.ts); return true;
+    }).sort(function(a, b) { return b.ts - a.ts; }).slice(0, 500);
+    const merged = {
+      sessions:     Math.max(remote.sessions     || 0, local.sessions     || 0),
+      interactions: Math.max(remote.interactions || 0, local.interactions || 0),
+      submissions:  mergedLog.length,
+      log:          mergedLog
+    };
+    try { localStorage.setItem('ax_stats', JSON.stringify(merged)); } catch(_) {}
+    loadStats();
+    showToast('Stats synced from Shopify!', 'success');
+  });
+
+  function loadStatStoreUrl() {
+    const url = localStorage.getItem('ax_stat_store_url') || '';
+    const el  = document.getElementById('stat-store-url');
+    if (el) el.value = url;
   }
 
   /* ── Chat flow editor ────────────────────────────── */

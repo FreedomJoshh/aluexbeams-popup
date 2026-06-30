@@ -478,16 +478,16 @@
     <div class="mode-toggle">
       <button id="mode-video-btn" class="mode-btn active" onclick="setMode('video')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-        Video
+        <span id="mode-video-label">Video</span>
       </button>
       <button id="mode-chat-btn" class="mode-btn" onclick="setMode('chat')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Chat
+        <span id="mode-chat-label">Chat</span>
       </button>
     </div>
     <div id="progress-inner">
     <div class="progress-header">
-      <span class="progress-label">Your Progress</span>
+      <span class="progress-label" id="progress-label">Your Progress</span>
       <span class="progress-pct" id="pct">25%</span>
     </div>
     <div class="steps">
@@ -544,7 +544,7 @@
     <div class="section" id="sec-xbeams">
       <button class="btn-back" onclick="back()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
-        Back
+        <span class="back-label">Back</span>
       </button>
       <div class="sec-title" id="sec-title-2">X-beams</div>
       <div class="video-wrap">
@@ -566,7 +566,7 @@
     <div class="section" id="sec-spreader">
       <button class="btn-back" onclick="back()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
-        Back
+        <span class="back-label">Back</span>
       </button>
       <div class="sec-title" id="sec-title-3">Spreader Bars</div>
       <div class="video-wrap">
@@ -588,7 +588,7 @@
     <div class="section" id="sec-quote">
       <button class="btn-back" onclick="back()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
-        Back
+        <span class="back-label">Back</span>
       </button>
 
       <div id="form-wrap">
@@ -598,25 +598,25 @@
         <form onsubmit="submitForm(event)">
           <div class="form-grid">
             <div class="fg">
-              <label for="f-name">Full Name <span style="color:var(--primary)">*</span></label>
+              <label for="f-name"><span id="lbl-name">Full Name</span> <span style="color:var(--primary)">*</span></label>
               <input id="f-name" type="text" placeholder="Jane Smith" required>
             </div>
             <div class="fg">
-              <label for="f-email">Email <span style="color:var(--primary)">*</span></label>
+              <label for="f-email"><span id="lbl-email">Email</span> <span style="color:var(--primary)">*</span></label>
               <input id="f-email" type="email" placeholder="jane@company.com" required>
             </div>
             <div class="fg">
-              <label for="f-phone">Phone</label>
+              <label for="f-phone" id="lbl-phone">Phone</label>
               <input id="f-phone" type="tel" placeholder="+1 234 567 8900" required>
             </div>
             <div class="fg">
-              <label for="f-company">Company</label>
+              <label for="f-company" id="lbl-company">Company</label>
               <input id="f-company" type="text" placeholder="Acme Corp" required>
             </div>
             <div class="fg s2">
-              <label for="f-country">Country</label>
+              <label for="f-country" id="lbl-country">Country</label>
               <select id="f-country" required>
-                <option value="">Select your country…</option>
+                <option value="" id="country-placeholder-opt">Select your country…</option>
                 <option>Afghanistan</option><option>Albania</option><option>Algeria</option>
                 <option>Argentina</option><option>Australia</option><option>Austria</option>
                 <option>Bangladesh</option><option>Belgium</option><option>Bolivia</option>
@@ -643,7 +643,7 @@
               </select>
             </div>
             <div class="fg s2">
-              <label for="f-info">Additional Information</label>
+              <label for="f-info" id="lbl-info">Additional Information</label>
               <textarea id="f-info" placeholder="Tell us about your project or any specific requirements…"></textarea>
             </div>
             <div class="fg s2">
@@ -668,8 +668,8 @@
             <polyline points="20,6 9,17 4,12"/>
           </svg>
         </div>
-        <h2>Quote Submitted!</h2>
-        <p>Thank you for your interest. Our team will review your request and reach out to you shortly.</p>
+        <h2 id="success-title">Quote Submitted!</h2>
+        <p id="success-text">Thank you for your interest. Our team will review your request and reach out to you shortly.</p>
       </div>
     </div>
 
@@ -683,7 +683,7 @@
 
   <!-- ── Products ──────────────────────────────── -->
   <div class="card" id="products-card">
-    <h2 class="products-heading">Our Products</h2>
+    <h2 class="products-heading" id="products-heading">Our Products</h2>
     <div id="products-root"></div>
   </div>
 
@@ -770,6 +770,495 @@
     } catch(e) {}
   })();
 
+  /* ── Multilingual ─────────────────────────────────────────
+     LANG_CODES are the supported languages. TRANSLATIONS holds, per
+     language, both the admin-editable "content" strings (mirroring
+     DEFAULTS) and the fixed UI "chrome" strings, plus a built-in
+     chat flow. Non-English content can be overridden per-language
+     from the admin Languages tab (localStorage 'lang_packs'). ───── */
+  const LANG_CODES = ['en','sv','fi','de','it','es','fr'];
+  const LANG_NAMES = { en:'English', sv:'Svenska', fi:'Suomi', de:'Deutsch', it:'Italiano', es:'Español', fr:'Français' };
+  const GLOBAL_KEYS = ['primaryColor','bgColor','btnTextColor','video1','video2','video3','formEndpoint','prodInfoLink'];
+
+  const TRANSLATIONS = {
+    en: {
+      pageTitle: 'Product Overview & Quote',
+      step1Lbl: 'Intro', step2Lbl: 'X-beams', step3Lbl: 'Spreader', step4Lbl: 'Quote',
+      sec1Title: 'Introduction', sec2Title: 'X-beams', sec3Title: 'Spreader Bars',
+      v1b1: 'X-beams', v1b2: 'Spreader bars', v1b3: 'Request quote',
+      v2b1: 'Spreader bars', v2b2: 'Request quote',
+      v3b1: 'X-beams', v3b2: 'Request quote',
+      formTitle: 'Request a Quote',
+      formSub: "Fill in your details and we'll get back to you shortly.",
+      submitBtn: 'Submit Quote Request →',
+      prodSectionLabel: 'Products of Interest',
+      prodInfoText: 'For complete technical specifications and data sheets, see our full product catalogue.',
+      progressLabel: 'Your Progress', modeVideoLabel: 'Video', modeChatLabel: 'Chat', backLabel: 'Back',
+      stepWord: 'Step', ofWord: 'of',
+      lblName: 'Full Name', lblEmail: 'Email', lblPhone: 'Phone', lblCompany: 'Company',
+      lblCountry: 'Country', lblInfo: 'Additional Information',
+      phName: 'Jane Smith', phEmail: 'jane@company.com', phPhone: '+1 234 567 8900',
+      phCompany: 'Acme Corp', phInfo: 'Tell us about your project or any specific requirements…',
+      countryPlaceholder: 'Select your country…',
+      successTitle: 'Quote Submitted!',
+      successText: 'Thank you for your interest. Our team will review your request and reach out to you shortly.',
+      productsHeading: 'Our Products', addProductPlaceholder: '— Add product —', sendingLabel: 'Sending…',
+      catXSpreaders: 'X-Spreaders', catStraightSpreaders: 'Straight Spreaders', catAccessories: 'Accessories',
+      learnMoreLabel: 'Learn more →',
+      chatFlow: DEFAULT_CHAT_FLOW
+    },
+    sv: {
+      pageTitle: 'Produktöversikt och offert',
+      step1Lbl: 'Intro', step2Lbl: 'X-balkar', step3Lbl: 'Spridare', step4Lbl: 'Offert',
+      sec1Title: 'Introduktion', sec2Title: 'X-balkar', sec3Title: 'Spridarbalkar',
+      v1b1: 'X-balkar', v1b2: 'Spridarbalkar', v1b3: 'Begär offert',
+      v2b1: 'Spridarbalkar', v2b2: 'Begär offert',
+      v3b1: 'X-balkar', v3b2: 'Begär offert',
+      formTitle: 'Begär en offert',
+      formSub: 'Fyll i dina uppgifter så återkommer vi inom kort.',
+      submitBtn: 'Skicka offertförfrågan →',
+      prodSectionLabel: 'Produkter av intresse',
+      prodInfoText: 'För fullständiga tekniska specifikationer och datablad, se vår kompletta produktkatalog.',
+      progressLabel: 'Ditt förlopp', modeVideoLabel: 'Video', modeChatLabel: 'Chatt', backLabel: 'Tillbaka',
+      stepWord: 'Steg', ofWord: 'av',
+      lblName: 'Fullständigt namn', lblEmail: 'E-post', lblPhone: 'Telefon', lblCompany: 'Företag',
+      lblCountry: 'Land', lblInfo: 'Ytterligare information',
+      phName: 'Jane Smith', phEmail: 'jane@foretag.se', phPhone: '+46 70 123 45 67',
+      phCompany: 'Acme AB', phInfo: 'Berätta om ditt projekt eller specifika krav…',
+      countryPlaceholder: 'Välj ditt land…',
+      successTitle: 'Offertförfrågan skickad!',
+      successText: 'Tack för ditt intresse. Vårt team granskar din förfrågan och hör av sig inom kort.',
+      productsHeading: 'Våra produkter', addProductPlaceholder: '— Lägg till produkt —', sendingLabel: 'Skickar…',
+      catXSpreaders: 'X-spridare', catStraightSpreaders: 'Raka spridare', catAccessories: 'Tillbehör',
+      learnMoreLabel: 'Läs mer →',
+      chatFlow: [
+        { id:'start', message:'Hej, hur kan vi hjälpa dig idag?', options:[
+          { label:'Begär en offert', next:'go_quote' },
+          { label:'Vanliga frågor', next:'faq' },
+          { label:'Vad gör Aluex produkter överlägsna?', next:'superior' },
+          { label:'Kontakta oss', next:'contact' }
+        ]},
+        { id:'faq', message:'Här är våra vanligaste frågor:', options:[
+          { label:'Vad är en spridarbalk?', next:'faq_spreader' },
+          { label:'Vilka kapaciteter finns tillgängliga?', next:'faq_capacity' },
+          { label:'Hur lägger jag en beställning?', next:'faq_order' },
+          { label:'← Tillbaka till huvudmenyn', next:'start' }
+        ]},
+        { id:'faq_spreader', message:'En spridarbalk är ett lyftredskap som fördelar lasten över flera lyftpunkter och minskar belastningen på godset. Aluex spridarbalkar är tillverkade av höghållfast aluminiumlegering för maximal prestanda vid minimal vikt.', options:[
+          { label:'Vilka kapaciteter finns tillgängliga?', next:'faq_capacity' },
+          { label:'Begär en offert', next:'go_quote' },
+          { label:'← Tillbaka till vanliga frågor', next:'faq' }
+        ]},
+        { id:'faq_capacity', message:'Aluex X-spridare finns från 2 ton upp till 50 tons kapacitet. Raka spridare sträcker sig från 5 till 25 ton. Skräddarsydda lösningar utöver dessa intervall finns också tillgängliga.', options:[
+          { label:'Vad gör Aluex produkter överlägsna?', next:'superior' },
+          { label:'Begär en offert', next:'go_quote' },
+          { label:'← Tillbaka till vanliga frågor', next:'faq' }
+        ]},
+        { id:'faq_order', message:'För att lägga en beställning börjar du med att begära en offert. Vårt team återkommer med pris och leveranstid utifrån dina specifika behov.', options:[
+          { label:'Begär en offert', next:'go_quote' },
+          { label:'← Tillbaka till vanliga frågor', next:'faq' }
+        ]},
+        { id:'superior', message:'Aluex produkter tillverkas av flygplansklassad aluminiumlegering, vilket gör dem betydligt lättare än alternativ i stål samtidigt som de behåller överlägsen styrka. CE-märkta och betrodda av lyftproffs världen över.', options:[
+          { label:'Berätta mer', next:'superior_more' },
+          { label:'Begär en offert', next:'go_quote' },
+          { label:'← Tillbaka till huvudmenyn', next:'start' }
+        ]},
+        { id:'superior_more', message:'Viktiga fördelar: Upp till 70% lättare än stål · Korrosionsbeständig · CE-märkt · Anpassningsbara längder · Snabb leverans', options:[
+          { label:'Begär en offert', next:'go_quote' },
+          { label:'← Tillbaka till huvudmenyn', next:'start' }
+        ]},
+        { id:'contact', message:'Du når vårt team på info@aluexbeams.com. Vi svarar vanligtvis inom en arbetsdag. Alternativt kan du begära en offert så kontaktar vi dig med alla detaljer.', options:[
+          { label:'Begär en offert', next:'go_quote' },
+          { label:'← Tillbaka till huvudmenyn', next:'start' }
+        ]}
+      ]
+    },
+    fi: {
+      pageTitle: 'Tuotekatsaus ja tarjouspyyntö',
+      step1Lbl: 'Esittely', step2Lbl: 'X-palkit', step3Lbl: 'Levityspalkki', step4Lbl: 'Tarjous',
+      sec1Title: 'Esittely', sec2Title: 'X-palkit', sec3Title: 'Levityspalkit',
+      v1b1: 'X-palkit', v1b2: 'Levityspalkit', v1b3: 'Pyydä tarjous',
+      v2b1: 'Levityspalkit', v2b2: 'Pyydä tarjous',
+      v3b1: 'X-palkit', v3b2: 'Pyydä tarjous',
+      formTitle: 'Pyydä tarjous',
+      formSub: 'Täytä tietosi, niin palaamme asiaan pian.',
+      submitBtn: 'Lähetä tarjouspyyntö →',
+      prodSectionLabel: 'Kiinnostavat tuotteet',
+      prodInfoText: 'Täydelliset tekniset tiedot ja tietolomakkeet löydät koko tuoteluettelostamme.',
+      progressLabel: 'Etenemisesi', modeVideoLabel: 'Video', modeChatLabel: 'Chat', backLabel: 'Takaisin',
+      stepWord: 'Vaihe', ofWord: '/',
+      lblName: 'Koko nimi', lblEmail: 'Sähköposti', lblPhone: 'Puhelin', lblCompany: 'Yritys',
+      lblCountry: 'Maa', lblInfo: 'Lisätiedot',
+      phName: 'Jane Smith', phEmail: 'jane@yritys.fi', phPhone: '+358 40 123 4567',
+      phCompany: 'Acme Oy', phInfo: 'Kerro projektistasi tai erityisvaatimuksista…',
+      countryPlaceholder: 'Valitse maasi…',
+      successTitle: 'Tarjouspyyntö lähetetty!',
+      successText: 'Kiitos kiinnostuksestasi. Tiimimme käsittelee pyyntösi ja on sinuun yhteydessä pian.',
+      productsHeading: 'Tuotteemme', addProductPlaceholder: '— Lisää tuote —', sendingLabel: 'Lähetetään…',
+      catXSpreaders: 'X-levityspalkit', catStraightSpreaders: 'Suorat levityspalkit', catAccessories: 'Lisävarusteet',
+      learnMoreLabel: 'Lue lisää →',
+      chatFlow: [
+        { id:'start', message:'Hei, miten voimme auttaa sinua tänään?', options:[
+          { label:'Pyydä tarjous', next:'go_quote' },
+          { label:'Usein kysytyt kysymykset', next:'faq' },
+          { label:'Mikä tekee Aluex-tuotteista ylivoimaisia?', next:'superior' },
+          { label:'Ota yhteyttä', next:'contact' }
+        ]},
+        { id:'faq', message:'Tässä yleisimmät kysymyksemme:', options:[
+          { label:'Mikä on levityspalkki?', next:'faq_spreader' },
+          { label:'Mitä kapasiteetteja on saatavilla?', next:'faq_capacity' },
+          { label:'Miten teen tilauksen?', next:'faq_order' },
+          { label:'← Takaisin päävalikkoon', next:'start' }
+        ]},
+        { id:'faq_spreader', message:'Levityspalkki on nostolaite, joka jakaa kuorman useaan nostopisteeseen vähentäen kuormaan kohdistuvaa rasitusta. Aluex-levityspalkit valmistetaan lujasta alumiiniseoksesta, mikä takaa maksimaalisen suorituskyvyn minimipainolla.', options:[
+          { label:'Mitä kapasiteetteja on saatavilla?', next:'faq_capacity' },
+          { label:'Pyydä tarjous', next:'go_quote' },
+          { label:'← Takaisin UKK:hon', next:'faq' }
+        ]},
+        { id:'faq_capacity', message:'Aluex X-levityspalkkeja on saatavilla 2 tonnista aina 50 tonniin asti. Suorat levityspalkit kattavat alueen 5–25 tonnia. Myös näiden rajojen ulkopuolisia räätälöityjä ratkaisuja on saatavilla.', options:[
+          { label:'Mikä tekee Aluex-tuotteista ylivoimaisia?', next:'superior' },
+          { label:'Pyydä tarjous', next:'go_quote' },
+          { label:'← Takaisin UKK:hon', next:'faq' }
+        ]},
+        { id:'faq_order', message:'Tilauksen tekeminen alkaa tarjouspyynnöstä. Tiimimme palaa asiaan hinnoittelun ja toimitusaikojen kanssa tarpeidesi mukaan.', options:[
+          { label:'Pyydä tarjous', next:'go_quote' },
+          { label:'← Takaisin UKK:hon', next:'faq' }
+        ]},
+        { id:'superior', message:'Aluex-tuotteet valmistetaan lentokonelaatuisesta alumiiniseoksesta, mikä tekee niistä huomattavasti terästuotteita kevyempiä ilman, että lujuudesta tingitään. CE-sertifioitu ja nostoalan ammattilaisten luottama maailmanlaajuisesti.', options:[
+          { label:'Kerro lisää', next:'superior_more' },
+          { label:'Pyydä tarjous', next:'go_quote' },
+          { label:'← Takaisin päävalikkoon', next:'start' }
+        ]},
+        { id:'superior_more', message:'Tärkeimmät edut: Jopa 70 % kevyempi kuin teräs · Korroosionkestävä · CE-sertifioitu · Räätälöitävät pituudet · Nopea toimitus', options:[
+          { label:'Pyydä tarjous', next:'go_quote' },
+          { label:'← Takaisin päävalikkoon', next:'start' }
+        ]},
+        { id:'contact', message:'Tavoitat tiimimme osoitteessa info@aluexbeams.com. Vastaamme yleensä yhden arkipäivän kuluessa. Voit myös pyytää tarjouksen, niin otamme yhteyttä kaikkine yksityiskohtineen.', options:[
+          { label:'Pyydä tarjous', next:'go_quote' },
+          { label:'← Takaisin päävalikkoon', next:'start' }
+        ]}
+      ]
+    },
+    de: {
+      pageTitle: 'Produktübersicht & Angebot',
+      step1Lbl: 'Intro', step2Lbl: 'X-Träger', step3Lbl: 'Traverse', step4Lbl: 'Angebot',
+      sec1Title: 'Einführung', sec2Title: 'X-Träger', sec3Title: 'Traversen',
+      v1b1: 'X-Träger', v1b2: 'Traversen', v1b3: 'Angebot anfordern',
+      v2b1: 'Traversen', v2b2: 'Angebot anfordern',
+      v3b1: 'X-Träger', v3b2: 'Angebot anfordern',
+      formTitle: 'Angebot anfordern',
+      formSub: 'Füllen Sie Ihre Daten aus, wir melden uns in Kürze bei Ihnen.',
+      submitBtn: 'Angebotsanfrage senden →',
+      prodSectionLabel: 'Interessante Produkte',
+      prodInfoText: 'Vollständige technische Spezifikationen und Datenblätter finden Sie in unserem gesamten Produktkatalog.',
+      progressLabel: 'Ihr Fortschritt', modeVideoLabel: 'Video', modeChatLabel: 'Chat', backLabel: 'Zurück',
+      stepWord: 'Schritt', ofWord: 'von',
+      lblName: 'Vollständiger Name', lblEmail: 'E-Mail', lblPhone: 'Telefon', lblCompany: 'Unternehmen',
+      lblCountry: 'Land', lblInfo: 'Zusätzliche Informationen',
+      phName: 'Jane Smith', phEmail: 'jane@unternehmen.de', phPhone: '+49 30 1234 5678',
+      phCompany: 'Acme GmbH', phInfo: 'Erzählen Sie uns von Ihrem Projekt oder speziellen Anforderungen…',
+      countryPlaceholder: 'Land auswählen…',
+      successTitle: 'Angebotsanfrage gesendet!',
+      successText: 'Vielen Dank für Ihr Interesse. Unser Team prüft Ihre Anfrage und meldet sich in Kürze bei Ihnen.',
+      productsHeading: 'Unsere Produkte', addProductPlaceholder: '— Produkt hinzufügen —', sendingLabel: 'Wird gesendet…',
+      catXSpreaders: 'X-Traversen', catStraightSpreaders: 'Gerade Traversen', catAccessories: 'Zubehör',
+      learnMoreLabel: 'Mehr erfahren →',
+      chatFlow: [
+        { id:'start', message:'Hallo, wie können wir Ihnen heute helfen?', options:[
+          { label:'Angebot anfordern', next:'go_quote' },
+          { label:'Häufig gestellte Fragen', next:'faq' },
+          { label:'Was macht Aluex-Produkte überlegen?', next:'superior' },
+          { label:'Kontakt aufnehmen', next:'contact' }
+        ]},
+        { id:'faq', message:'Hier sind unsere häufigsten Fragen:', options:[
+          { label:'Was ist eine Traverse?', next:'faq_spreader' },
+          { label:'Welche Kapazitäten sind verfügbar?', next:'faq_capacity' },
+          { label:'Wie gebe ich eine Bestellung auf?', next:'faq_order' },
+          { label:'← Zurück zum Hauptmenü', next:'start' }
+        ]},
+        { id:'faq_spreader', message:'Eine Traverse ist ein Hebewerkzeug, das die Last auf mehrere Anschlagpunkte verteilt und so die Belastung des Hebeguts reduziert. Aluex-Traversen bestehen aus hochfester Aluminiumlegierung für maximale Leistung bei minimalem Gewicht.', options:[
+          { label:'Welche Kapazitäten sind verfügbar?', next:'faq_capacity' },
+          { label:'Angebot anfordern', next:'go_quote' },
+          { label:'← Zurück zu den FAQ', next:'faq' }
+        ]},
+        { id:'faq_capacity', message:'Aluex X-Traversen sind von 2 t bis 50 t Tragfähigkeit erhältlich. Gerade Traversen reichen von 5 t bis 25 t. Individuelle Lösungen außerhalb dieser Bereiche sind ebenfalls verfügbar.', options:[
+          { label:'Was macht Aluex-Produkte überlegen?', next:'superior' },
+          { label:'Angebot anfordern', next:'go_quote' },
+          { label:'← Zurück zu den FAQ', next:'faq' }
+        ]},
+        { id:'faq_order', message:'Um eine Bestellung aufzugeben, fordern Sie zunächst ein Angebot an. Unser Team meldet sich mit Preisen und Lieferzeiten passend zu Ihren Anforderungen.', options:[
+          { label:'Angebot anfordern', next:'go_quote' },
+          { label:'← Zurück zu den FAQ', next:'faq' }
+        ]},
+        { id:'superior', message:'Aluex-Produkte werden aus Aluminiumlegierung in Flugzeugqualität gefertigt, wodurch sie deutlich leichter sind als Stahlalternativen und dabei überlegene Festigkeit behalten. CE-zertifiziert und weltweit von Hebeprofis vertraut.', options:[
+          { label:'Mehr erfahren', next:'superior_more' },
+          { label:'Angebot anfordern', next:'go_quote' },
+          { label:'← Zurück zum Hauptmenü', next:'start' }
+        ]},
+        { id:'superior_more', message:'Wichtige Vorteile: Bis zu 70 % leichter als Stahl · Korrosionsbeständig · CE-zertifiziert · Individuelle Längen verfügbar · Schnelle Lieferung', options:[
+          { label:'Angebot anfordern', next:'go_quote' },
+          { label:'← Zurück zum Hauptmenü', next:'start' }
+        ]},
+        { id:'contact', message:'Sie erreichen unser Team unter info@aluexbeams.com. Wir antworten in der Regel innerhalb eines Werktages. Alternativ fordern Sie ein Angebot an, und wir kontaktieren Sie mit allen Details.', options:[
+          { label:'Angebot anfordern', next:'go_quote' },
+          { label:'← Zurück zum Hauptmenü', next:'start' }
+        ]}
+      ]
+    },
+    it: {
+      pageTitle: 'Panoramica prodotti e preventivo',
+      step1Lbl: 'Intro', step2Lbl: 'Travi X', step3Lbl: 'Bilancino', step4Lbl: 'Preventivo',
+      sec1Title: 'Introduzione', sec2Title: 'Travi X', sec3Title: 'Bilancini di sollevamento',
+      v1b1: 'Travi X', v1b2: 'Bilancini', v1b3: 'Richiedi preventivo',
+      v2b1: 'Bilancini', v2b2: 'Richiedi preventivo',
+      v3b1: 'Travi X', v3b2: 'Richiedi preventivo',
+      formTitle: 'Richiedi un preventivo',
+      formSub: 'Inserisci i tuoi dati e ti ricontatteremo a breve.',
+      submitBtn: 'Invia richiesta di preventivo →',
+      prodSectionLabel: 'Prodotti di interesse',
+      prodInfoText: 'Per specifiche tecniche complete e schede tecniche, consulta il nostro catalogo prodotti completo.',
+      progressLabel: 'I tuoi progressi', modeVideoLabel: 'Video', modeChatLabel: 'Chat', backLabel: 'Indietro',
+      stepWord: 'Passaggio', ofWord: 'di',
+      lblName: 'Nome completo', lblEmail: 'Email', lblPhone: 'Telefono', lblCompany: 'Azienda',
+      lblCountry: 'Paese', lblInfo: 'Informazioni aggiuntive',
+      phName: 'Jane Smith', phEmail: 'jane@azienda.it', phPhone: '+39 02 1234 5678',
+      phCompany: 'Acme Srl', phInfo: 'Raccontaci del tuo progetto o di eventuali esigenze specifiche…',
+      countryPlaceholder: 'Seleziona il tuo paese…',
+      successTitle: 'Richiesta inviata!',
+      successText: 'Grazie per il tuo interesse. Il nostro team esaminerà la tua richiesta e ti contatterà a breve.',
+      productsHeading: 'I nostri prodotti', addProductPlaceholder: '— Aggiungi prodotto —', sendingLabel: 'Invio in corso…',
+      catXSpreaders: 'Bilancini X', catStraightSpreaders: 'Bilancini dritti', catAccessories: 'Accessori',
+      learnMoreLabel: 'Scopri di più →',
+      chatFlow: [
+        { id:'start', message:'Ciao, come possiamo aiutarti oggi?', options:[
+          { label:'Richiedi un preventivo', next:'go_quote' },
+          { label:'Domande frequenti', next:'faq' },
+          { label:'Cosa rende superiori i prodotti Aluex?', next:'superior' },
+          { label:'Contattaci', next:'contact' }
+        ]},
+        { id:'faq', message:"Ecco le nostre domande più frequenti:", options:[
+          { label:"Cos'è un bilancino?", next:'faq_spreader' },
+          { label:'Quali capacità sono disponibili?', next:'faq_capacity' },
+          { label:'Come si effettua un ordine?', next:'faq_order' },
+          { label:'← Torna al menu principale', next:'start' }
+        ]},
+        { id:'faq_spreader', message:'Un bilancino è un dispositivo di sollevamento usato per distribuire il carico su più punti di aggancio, riducendo lo stress sul carico. I bilancini Aluex sono realizzati in lega di alluminio ad alta resistenza per ottenere le massime prestazioni con il minimo peso.', options:[
+          { label:'Quali capacità sono disponibili?', next:'faq_capacity' },
+          { label:'Richiedi un preventivo', next:'go_quote' },
+          { label:'← Torna alle FAQ', next:'faq' }
+        ]},
+        { id:'faq_capacity', message:'I bilancini X Aluex sono disponibili da 2 t fino a 50 t di capacità. I bilancini dritti vanno da 5 t a 25 t. Sono disponibili anche soluzioni personalizzate oltre questi intervalli.', options:[
+          { label:'Cosa rende superiori i prodotti Aluex?', next:'superior' },
+          { label:'Richiedi un preventivo', next:'go_quote' },
+          { label:'← Torna alle FAQ', next:'faq' }
+        ]},
+        { id:'faq_order', message:'Per effettuare un ordine, inizia richiedendo un preventivo. Il nostro team ti risponderà con prezzi e tempi di consegna in base alle tue esigenze specifiche.', options:[
+          { label:'Richiedi un preventivo', next:'go_quote' },
+          { label:'← Torna alle FAQ', next:'faq' }
+        ]},
+        { id:'superior', message:'I prodotti Aluex sono realizzati in lega di alluminio di grado aeronautico, il che li rende molto più leggeri rispetto alle alternative in acciaio mantenendo una resistenza superiore. Certificati CE e scelti da professionisti del sollevamento in tutto il mondo.', options:[
+          { label:'Scopri di più', next:'superior_more' },
+          { label:'Richiedi un preventivo', next:'go_quote' },
+          { label:'← Torna al menu principale', next:'start' }
+        ]},
+        { id:'superior_more', message:"Vantaggi principali: Fino al 70% più leggero dell'acciaio · Resistente alla corrosione · Certificato CE · Lunghezze personalizzabili · Consegna rapida", options:[
+          { label:'Richiedi un preventivo', next:'go_quote' },
+          { label:'← Torna al menu principale', next:'start' }
+        ]},
+        { id:'contact', message:'Puoi contattare il nostro team a info@aluexbeams.com. Solitamente rispondiamo entro un giorno lavorativo. In alternativa, richiedi un preventivo e ti contatteremo con tutti i dettagli.', options:[
+          { label:'Richiedi un preventivo', next:'go_quote' },
+          { label:'← Torna al menu principale', next:'start' }
+        ]}
+      ]
+    },
+    es: {
+      pageTitle: 'Resumen de productos y presupuesto',
+      step1Lbl: 'Intro', step2Lbl: 'Vigas X', step3Lbl: 'Separador', step4Lbl: 'Presupuesto',
+      sec1Title: 'Introducción', sec2Title: 'Vigas X', sec3Title: 'Barras separadoras',
+      v1b1: 'Vigas X', v1b2: 'Barras separadoras', v1b3: 'Solicitar presupuesto',
+      v2b1: 'Barras separadoras', v2b2: 'Solicitar presupuesto',
+      v3b1: 'Vigas X', v3b2: 'Solicitar presupuesto',
+      formTitle: 'Solicitar un presupuesto',
+      formSub: 'Completa tus datos y te responderemos en breve.',
+      submitBtn: 'Enviar solicitud de presupuesto →',
+      prodSectionLabel: 'Productos de interés',
+      prodInfoText: 'Para especificaciones técnicas completas y fichas de datos, consulta nuestro catálogo completo de productos.',
+      progressLabel: 'Tu progreso', modeVideoLabel: 'Video', modeChatLabel: 'Chat', backLabel: 'Atrás',
+      stepWord: 'Paso', ofWord: 'de',
+      lblName: 'Nombre completo', lblEmail: 'Correo electrónico', lblPhone: 'Teléfono', lblCompany: 'Empresa',
+      lblCountry: 'País', lblInfo: 'Información adicional',
+      phName: 'Jane Smith', phEmail: 'jane@empresa.com', phPhone: '+34 612 34 56 78',
+      phCompany: 'Acme S.L.', phInfo: 'Cuéntanos sobre tu proyecto o requisitos específicos…',
+      countryPlaceholder: 'Selecciona tu país…',
+      successTitle: '¡Solicitud enviada!',
+      successText: 'Gracias por tu interés. Nuestro equipo revisará tu solicitud y se pondrá en contacto contigo en breve.',
+      productsHeading: 'Nuestros productos', addProductPlaceholder: '— Añadir producto —', sendingLabel: 'Enviando…',
+      catXSpreaders: 'Separadores X', catStraightSpreaders: 'Separadores rectos', catAccessories: 'Accesorios',
+      learnMoreLabel: 'Saber más →',
+      chatFlow: [
+        { id:'start', message:'Hola, ¿cómo podemos ayudarte hoy?', options:[
+          { label:'Solicitar un presupuesto', next:'go_quote' },
+          { label:'Preguntas frecuentes', next:'faq' },
+          { label:'¿Qué hace superiores a los productos Aluex?', next:'superior' },
+          { label:'Ponte en contacto', next:'contact' }
+        ]},
+        { id:'faq', message:'Estas son nuestras preguntas más frecuentes:', options:[
+          { label:'¿Qué es una barra separadora?', next:'faq_spreader' },
+          { label:'¿Qué capacidades hay disponibles?', next:'faq_capacity' },
+          { label:'¿Cómo realizo un pedido?', next:'faq_order' },
+          { label:'← Volver al menú principal', next:'start' }
+        ]},
+        { id:'faq_spreader', message:'Una barra separadora es un dispositivo de elevación que distribuye la carga entre varios puntos de izado, reduciendo la tensión sobre la carga. Las barras separadoras Aluex están fabricadas en aleación de aluminio de alta resistencia para ofrecer el máximo rendimiento con el mínimo peso.', options:[
+          { label:'¿Qué capacidades hay disponibles?', next:'faq_capacity' },
+          { label:'Solicitar un presupuesto', next:'go_quote' },
+          { label:'← Volver a las preguntas frecuentes', next:'faq' }
+        ]},
+        { id:'faq_capacity', message:'Los separadores X de Aluex están disponibles desde 2 t hasta 50 t de capacidad. Los separadores rectos van de 5 t a 25 t. También existen soluciones personalizadas fuera de estos rangos.', options:[
+          { label:'¿Qué hace superiores a los productos Aluex?', next:'superior' },
+          { label:'Solicitar un presupuesto', next:'go_quote' },
+          { label:'← Volver a las preguntas frecuentes', next:'faq' }
+        ]},
+        { id:'faq_order', message:'Para realizar un pedido, comienza solicitando un presupuesto. Nuestro equipo te responderá con precios y plazos de entrega según tus necesidades específicas.', options:[
+          { label:'Solicitar un presupuesto', next:'go_quote' },
+          { label:'← Volver a las preguntas frecuentes', next:'faq' }
+        ]},
+        { id:'superior', message:'Los productos Aluex están fabricados con aleación de aluminio de grado aeronáutico, lo que los hace mucho más ligeros que las alternativas de acero sin renunciar a una resistencia superior. Certificados CE y de confianza para profesionales de la elevación en todo el mundo.', options:[
+          { label:'Saber más', next:'superior_more' },
+          { label:'Solicitar un presupuesto', next:'go_quote' },
+          { label:'← Volver al menú principal', next:'start' }
+        ]},
+        { id:'superior_more', message:'Ventajas clave: Hasta un 70% más ligero que el acero · Resistente a la corrosión · Certificado CE · Longitudes personalizables · Entrega rápida', options:[
+          { label:'Solicitar un presupuesto', next:'go_quote' },
+          { label:'← Volver al menú principal', next:'start' }
+        ]},
+        { id:'contact', message:'Puedes contactar con nuestro equipo en info@aluexbeams.com. Normalmente respondemos en un día laborable. También puedes solicitar un presupuesto y te contactaremos con todos los detalles.', options:[
+          { label:'Solicitar un presupuesto', next:'go_quote' },
+          { label:'← Volver al menú principal', next:'start' }
+        ]}
+      ]
+    },
+    fr: {
+      pageTitle: 'Présentation des produits et devis',
+      step1Lbl: 'Intro', step2Lbl: 'Palonniers X', step3Lbl: 'Palonnier', step4Lbl: 'Devis',
+      sec1Title: 'Introduction', sec2Title: 'Palonniers X', sec3Title: 'Palonniers',
+      v1b1: 'Palonniers X', v1b2: 'Palonniers', v1b3: 'Demander un devis',
+      v2b1: 'Palonniers', v2b2: 'Demander un devis',
+      v3b1: 'Palonniers X', v3b2: 'Demander un devis',
+      formTitle: 'Demander un devis',
+      formSub: 'Renseignez vos coordonnées, nous vous répondrons rapidement.',
+      submitBtn: 'Envoyer la demande de devis →',
+      prodSectionLabel: 'Produits qui vous intéressent',
+      prodInfoText: 'Pour les spécifications techniques complètes et les fiches techniques, consultez notre catalogue complet.',
+      progressLabel: 'Votre progression', modeVideoLabel: 'Vidéo', modeChatLabel: 'Chat', backLabel: 'Retour',
+      stepWord: 'Étape', ofWord: 'sur',
+      lblName: 'Nom complet', lblEmail: 'E-mail', lblPhone: 'Téléphone', lblCompany: 'Entreprise',
+      lblCountry: 'Pays', lblInfo: 'Informations complémentaires',
+      phName: 'Jane Smith', phEmail: 'jane@entreprise.fr', phPhone: '+33 6 12 34 56 78',
+      phCompany: 'Acme SARL', phInfo: 'Parlez-nous de votre projet ou de vos besoins spécifiques…',
+      countryPlaceholder: 'Sélectionnez votre pays…',
+      successTitle: 'Demande envoyée !',
+      successText: 'Merci de votre intérêt. Notre équipe examinera votre demande et vous recontactera rapidement.',
+      productsHeading: 'Nos produits', addProductPlaceholder: '— Ajouter un produit —', sendingLabel: 'Envoi en cours…',
+      catXSpreaders: 'Palonniers X', catStraightSpreaders: 'Palonniers droits', catAccessories: 'Accessoires',
+      learnMoreLabel: 'En savoir plus →',
+      chatFlow: [
+        { id:'start', message:"Bonjour, comment pouvons-nous vous aider aujourd'hui ?", options:[
+          { label:'Demander un devis', next:'go_quote' },
+          { label:'Questions fréquentes', next:'faq' },
+          { label:'Qu\'est-ce qui rend les produits Aluex supérieurs ?', next:'superior' },
+          { label:'Nous contacter', next:'contact' }
+        ]},
+        { id:'faq', message:'Voici nos questions les plus fréquentes :', options:[
+          { label:"Qu'est-ce qu'un palonnier ?", next:'faq_spreader' },
+          { label:'Quelles capacités sont disponibles ?', next:'faq_capacity' },
+          { label:'Comment passer une commande ?', next:'faq_order' },
+          { label:'← Retour au menu principal', next:'start' }
+        ]},
+        { id:'faq_spreader', message:"Un palonnier est un dispositif de levage utilisé pour répartir la charge sur plusieurs points d'élingage, réduisant ainsi les contraintes sur la charge. Les palonniers Aluex sont fabriqués en alliage d'aluminium haute résistance pour des performances maximales avec un poids minimal.", options:[
+          { label:'Quelles capacités sont disponibles ?', next:'faq_capacity' },
+          { label:'Demander un devis', next:'go_quote' },
+          { label:'← Retour aux questions fréquentes', next:'faq' }
+        ]},
+        { id:'faq_capacity', message:'Les palonniers X Aluex sont disponibles de 2 t à 50 t de capacité. Les palonniers droits vont de 5 t à 25 t. Des solutions sur mesure au-delà de ces plages sont également disponibles.', options:[
+          { label:'Qu\'est-ce qui rend les produits Aluex supérieurs ?', next:'superior' },
+          { label:'Demander un devis', next:'go_quote' },
+          { label:'← Retour aux questions fréquentes', next:'faq' }
+        ]},
+        { id:'faq_order', message:'Pour passer une commande, commencez par demander un devis. Notre équipe vous recontactera avec les tarifs et délais selon vos besoins spécifiques.', options:[
+          { label:'Demander un devis', next:'go_quote' },
+          { label:'← Retour aux questions fréquentes', next:'faq' }
+        ]},
+        { id:'superior', message:"Les produits Aluex sont fabriqués en alliage d'aluminium de qualité aéronautique, ce qui les rend nettement plus légers que les alternatives en acier tout en conservant une résistance supérieure. Certifiés CE et reconnus par les professionnels du levage du monde entier.", options:[
+          { label:'En savoir plus', next:'superior_more' },
+          { label:'Demander un devis', next:'go_quote' },
+          { label:'← Retour au menu principal', next:'start' }
+        ]},
+        { id:'superior_more', message:"Principaux avantages : Jusqu'à 70 % plus léger que l'acier · Résistant à la corrosion · Certifié CE · Longueurs personnalisables · Livraison rapide", options:[
+          { label:'Demander un devis', next:'go_quote' },
+          { label:'← Retour au menu principal', next:'start' }
+        ]},
+        { id:'contact', message:'Vous pouvez joindre notre équipe à info@aluexbeams.com. Nous répondons généralement sous un jour ouvré. Vous pouvez également demander un devis et nous vous contacterons avec tous les détails.', options:[
+          { label:'Demander un devis', next:'go_quote' },
+          { label:'← Retour au menu principal', next:'start' }
+        ]}
+      ]
+    }
+  };
+
+  let currentLang = 'en';
+
+  function detectInitialLang() {
+    try {
+      const q = (new URLSearchParams(window.location.search).get('lang') || '').toLowerCase();
+      if (LANG_CODES.includes(q)) return q;
+    } catch(_) {}
+    try {
+      const nav = (navigator.language || '').slice(0,2).toLowerCase();
+      if (LANG_CODES.includes(nav)) return nav;
+    } catch(_) {}
+    return 'en';
+  }
+
+  function buildSettings(lang, remoteSettings) {
+    let localRaw = {};
+    try { localRaw = JSON.parse(localStorage.getItem('site_settings') || '{}'); } catch(_) {}
+    const globalSrc = remoteSettings || localRaw;
+    const result = { ...DEFAULTS };
+    GLOBAL_KEYS.forEach(k => { if (globalSrc[k]) result[k] = globalSrc[k]; });
+
+    Object.assign(result, TRANSLATIONS.en, TRANSLATIONS[lang] || {});
+
+    if (lang === 'en') {
+      Object.assign(result, localRaw);
+      if (remoteSettings) Object.assign(result, remoteSettings);
+    } else {
+      let overrides = {};
+      if (window._remoteLangPacks && window._remoteLangPacks[lang]) {
+        overrides = window._remoteLangPacks[lang];
+      } else {
+        try { overrides = (JSON.parse(localStorage.getItem('lang_packs') || '{}'))[lang] || {}; } catch(_) {}
+      }
+      Object.assign(result, overrides);
+    }
+    return result;
+  }
+
+  function refreshChatFlowForLang() {
+    if (currentLang === 'en') return;
+    const pack = TRANSLATIONS[currentLang];
+    if (pack && pack.chatFlow) {
+      chatFlow    = pack.chatFlow;
+      chatFlowMap = buildChatMap(pack.chatFlow);
+    }
+  }
+
+  function applyLang(lang, remoteSettings) {
+    currentLang = LANG_CODES.includes(lang) ? lang : 'en';
+    document.documentElement.lang = currentLang;
+    applySettings(buildSettings(currentLang, remoteSettings));
+    refreshChatFlowForLang();
+  }
+
   function setMode(mode) {
     const isChat = mode === 'chat';
     if (isChat) trackInteraction();
@@ -848,9 +1337,10 @@
 
     document.title = s.pageTitle;
 
+    window._currentText = s;
+
     const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    const cap = document.getElementById('step-caption');
-    if (cap) cap.textContent = `Step 1 of 4 · ${s.step1Lbl}`;
+    const setPh   = (id, val) => { const el = document.getElementById(id); if (el) el.placeholder = val; };
     setText('sl1', s.step1Lbl); setText('sl2', s.step2Lbl);
     setText('sl3', s.step3Lbl); setText('sl4', s.step4Lbl);
     setText('sec-title-1', s.sec1Title);
@@ -864,8 +1354,30 @@
     setText('submit-btn',        s.submitBtn);
     setText('form-prod-label',   s.prodSectionLabel);
     setText('form-prod-info-text', s.prodInfoText);
+    setText('form-prod-info-link', s.learnMoreLabel);
     const il = document.getElementById('form-prod-info-link');
     if (il) { il.href = s.prodInfoLink || '#'; il.style.display = s.prodInfoLink ? '' : 'none'; }
+
+    setText('progress-label', s.progressLabel);
+    setText('mode-video-label', s.modeVideoLabel);
+    setText('mode-chat-label',  s.modeChatLabel);
+    document.querySelectorAll('.back-label').forEach(el => { el.textContent = s.backLabel; });
+    setText('lbl-name', s.lblName); setText('lbl-email', s.lblEmail);
+    setText('lbl-phone', s.lblPhone); setText('lbl-company', s.lblCompany);
+    setText('lbl-country', s.lblCountry); setText('lbl-info', s.lblInfo);
+    setPh('f-name', s.phName); setPh('f-email', s.phEmail);
+    setPh('f-phone', s.phPhone); setPh('f-company', s.phCompany);
+    setPh('f-info', s.phInfo);
+    setText('country-placeholder-opt', s.countryPlaceholder);
+    setText('success-title', s.successTitle);
+    setText('success-text',  s.successText);
+    setText('products-heading', s.productsHeading);
+
+    const cap = document.getElementById('step-caption');
+    if (cap) cap.textContent = stepCaption(1);
+
+    renderProducts();
+    renderFormProducts();
 
     [1,2,3].forEach(n => {
       const src  = (s['video' + n] || '').trim();
@@ -887,6 +1399,12 @@
       }
     });
     syncSectionVideo();
+  }
+
+  function stepCaption(step) {
+    const t = window._currentText || {};
+    const lbl = document.getElementById('sl' + step).textContent;
+    return `${t.stepWord || 'Step'} ${step} ${t.ofWord || 'of'} 4 · ${lbl}`;
   }
 
   function getYouTubeId(url) {
@@ -920,30 +1438,25 @@
   }
 
   (function loadSettings() {
-    try {
-      const raw = localStorage.getItem('site_settings');
-      applySettings(raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS });
-    } catch(e) {
-      applySettings({ ...DEFAULTS });
-    }
+    applyLang(detectInitialLang());
   })();
 
   /* ── Receive settings from Shopify embed.js ─── */
   window.addEventListener('message', function(e) {
     if (!e.data || e.data.type !== 'AX_SETTINGS') return;
     const d = e.data.data || {};
-    if (d.settings) {
-      window._remoteSettings = d.settings;
-      applySettings({ ...DEFAULTS, ...d.settings });
-    }
+    if (d.settings) window._remoteSettings = d.settings;
+    if (d.langPacks) window._remoteLangPacks = d.langPacks;
     if (d.products && d.products.length) {
       window._remoteProducts = d.products;
       renderProducts();
     }
-    if (d.chatFlow && d.chatFlow.length) {
+    const lang = (d.lang && LANG_CODES.includes(d.lang)) ? d.lang : currentLang;
+    if (d.chatFlow && d.chatFlow.length && lang === 'en') {
       chatFlow    = d.chatFlow;
       chatFlowMap = buildChatMap(d.chatFlow);
     }
+    applyLang(lang, window._remoteSettings);
   });
 
   /* ── Navigation ────────────────────────────────────────── */
@@ -1019,7 +1532,7 @@
       document.getElementById('sc' + i).style.width = i < step ? '100%' : '0%';
     }
     const cap = document.getElementById('step-caption');
-    if (cap) cap.textContent = `Step ${step} of 4 · ${document.getElementById('sl' + step).textContent}`;
+    if (cap) cap.textContent = stepCaption(step);
     syncSectionVideo();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1029,7 +1542,7 @@
     const btn = document.getElementById('submit-btn');
     const origText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = 'Sending…';
+    btn.textContent = (window._currentText || {}).sendingLabel || 'Sending…';
 
     const products = selectedProducts.length
       ? selectedProducts.map(p => `${p.name} ×${p.qty}`).join(', ')
@@ -1114,12 +1627,17 @@
     }
     const map = Object.fromEntries(saved.map(p => [p.id, p]));
     const products = DEFAULT_PRODUCTS.map(p => ({ ...p, ...(map[p.id] || {}) }));
+    const t = window._currentText || {};
 
-    const CATS = ['X-Spreaders', 'Straight Spreaders', 'Accessories'];
-    root.innerHTML = CATS.map(cat => {
-      const items = products.filter(p => p.cat === cat);
+    const CATS = [
+      { cat: 'X-Spreaders',        label: t.catXSpreaders        || 'X-Spreaders' },
+      { cat: 'Straight Spreaders', label: t.catStraightSpreaders || 'Straight Spreaders' },
+      { cat: 'Accessories',        label: t.catAccessories       || 'Accessories' },
+    ];
+    root.innerHTML = CATS.map(c => {
+      const items = products.filter(p => p.cat === c.cat);
       return `<div class="prod-cat">
-        <div class="prod-cat-title">${cat}</div>
+        <div class="prod-cat-title">${c.label}</div>
         <div class="prod-grid">
           ${items.map(p => {
             const src  = (p.img  || '').trim();
@@ -1149,17 +1667,18 @@
   function renderFormProducts() {
     const root = document.getElementById('form-products-root');
     if (!root) return;
+    const t = window._currentText || {};
     const CATS = [
-      { key: 'xsp', label: 'X-Spreaders',       cat: 'X-Spreaders'        },
-      { key: 'str', label: 'Straight Spreaders', cat: 'Straight Spreaders' },
-      { key: 'acc', label: 'Accessories',        cat: 'Accessories'        },
+      { key: 'xsp', label: t.catXSpreaders        || 'X-Spreaders',        cat: 'X-Spreaders'        },
+      { key: 'str', label: t.catStraightSpreaders || 'Straight Spreaders', cat: 'Straight Spreaders' },
+      { key: 'acc', label: t.catAccessories       || 'Accessories',        cat: 'Accessories'        },
     ];
     root.innerHTML = `<div class="fpc-grid">${CATS.map(c => {
       const items = DEFAULT_PRODUCTS.filter(p => p.cat === c.cat);
       return `<div class="fpc-col">
         <div class="fpc-col-label">${c.label}</div>
         <select class="fpc-select" id="fpc-${c.key}" onchange="addProduct(this)">
-          <option value="">— Add product —</option>
+          <option value="">${t.addProductPlaceholder || '— Add product —'}</option>
           ${items.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
         </select>
       </div>`;

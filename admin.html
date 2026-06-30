@@ -266,7 +266,7 @@
     }
 
     .prod-admin-row {
-      display: flex; gap: 16px; align-items: flex-start;
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;
       padding: 12px 0; border-bottom: 1px solid var(--a-border);
     }
     .prod-admin-row:last-child { border-bottom: none; }
@@ -280,6 +280,23 @@
       flex: 1; display: grid;
       grid-template-columns: 1fr 1fr 90px 90px;
       gap: 10px;
+    }
+
+    .prod-admin-lang-links { flex: 1 0 100%; margin-top: 6px; }
+    .prod-admin-lang-links summary {
+      font-size: 12px; font-weight: 600; color: var(--a-muted);
+      cursor: pointer; user-select: none; list-style: none;
+    }
+    .prod-admin-lang-links summary::-webkit-details-marker { display: none; }
+    .prod-admin-lang-links summary:hover { color: var(--a-primary); }
+    .prod-admin-lang-links summary::before { content: '▸ '; }
+    .prod-admin-lang-links[open] summary::before { content: '▾ '; }
+    .prod-lang-link-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      gap: 10px; margin-top: 10px;
+    }
+    @media (max-width: 640px) {
+      .prod-lang-link-grid { grid-template-columns: 1fr 1fr; }
     }
 
     /* ── Responsive ─────────────────────────── */
@@ -1036,6 +1053,24 @@
           </div>
         </div>
       </div>
+
+      <div class="a-section">
+        <div class="a-section-title">Product Card Labels</div>
+        <div class="a-grid cols3">
+          <div class="a-field">
+            <label class="a-label">Capacity Label</label>
+            <input class="a-input" type="text" id="lang-capacityLabel">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Reach Label</label>
+            <input class="a-input" type="text" id="lang-reachLabel">
+          </div>
+          <div class="a-field">
+            <label class="a-label">View Product Button</label>
+            <input class="a-input" type="text" id="lang-viewProductLabel">
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ══ SHOPIFY tab ════════════════════════════════ -->
@@ -1131,6 +1166,16 @@
                 <input class="a-input" type="text" id="pa-${p.id}-reach" placeholder="—">
               </div>
             </div>
+            <details class="prod-admin-lang-links">
+              <summary>Per-language button links (optional)</summary>
+              <div class="prod-lang-link-grid">
+                ${LANG_LIST.map(l => `
+                  <div class="a-field">
+                    <label class="a-label">${l.name}</label>
+                    <input class="a-input" type="text" id="pa-${p.id}-link-${l.code}" placeholder="Same as Button Link">
+                  </div>`).join('')}
+              </div>
+            </details>
           </div>`).join('')}
       </div>`;
     }).join('');
@@ -1142,18 +1187,22 @@
     const map = Object.fromEntries(saved.map(p => [p.id, p]));
     DEFAULT_PRODUCTS.forEach(p => {
       const s = map[p.id] || {};
+      const links = s.links || {};
       const set = (f, v) => { const el = document.getElementById('pa-' + p.id + '-' + f); if (el) el.value = v; };
       set('img',   s.img   ?? '');
       set('link',  s.link  ?? '');
       set('cap',   s.cap   != null ? s.cap   : p.cap);
       set('reach', s.reach != null ? s.reach : p.reach);
+      LANG_LIST.forEach(l => set('link-' + l.code, links[l.code] ?? ''));
     });
   }
 
   function collectProducts() {
     return DEFAULT_PRODUCTS.map(p => {
       const g = f => { const el = document.getElementById('pa-' + p.id + '-' + f); return el ? el.value : ''; };
-      return { id: p.id, img: g('img'), link: g('link'), cap: g('cap') || p.cap, reach: g('reach') || p.reach };
+      const links = {};
+      LANG_LIST.forEach(l => { links[l.code] = g('link-' + l.code); });
+      return { id: p.id, img: g('img'), link: g('link'), cap: g('cap') || p.cap, reach: g('reach') || p.reach, links };
     });
   }
 
@@ -1426,7 +1475,8 @@
     'pageTitle', 'step1Lbl', 'step2Lbl', 'step3Lbl', 'step4Lbl',
     'sec1Title', 'sec2Title', 'sec3Title',
     'v1b1', 'v1b2', 'v1b3', 'v2b1', 'v2b2', 'v3b1', 'v3b2',
-    'formTitle', 'formSub', 'submitBtn', 'prodSectionLabel', 'prodInfoText'
+    'formTitle', 'formSub', 'submitBtn', 'prodSectionLabel', 'prodInfoText',
+    'capacityLabel', 'reachLabel', 'viewProductLabel'
   ];
   const LANG_CONTENT_DEFAULTS = {
     sv: {
@@ -1440,7 +1490,8 @@
       formSub: 'Fyll i dina uppgifter så återkommer vi inom kort.',
       submitBtn: 'Skicka offertförfrågan →',
       prodSectionLabel: 'Produkter av intresse',
-      prodInfoText: 'För fullständiga tekniska specifikationer och datablad, se vår kompletta produktkatalog.'
+      prodInfoText: 'För fullständiga tekniska specifikationer och datablad, se vår kompletta produktkatalog.',
+      capacityLabel: 'Kapacitet:', reachLabel: 'Räckvidd:', viewProductLabel: 'Visa produkt'
     },
     fi: {
       pageTitle: 'Tuotekatsaus ja tarjouspyyntö',
@@ -1453,7 +1504,8 @@
       formSub: 'Täytä tietosi, niin palaamme asiaan pian.',
       submitBtn: 'Lähetä tarjouspyyntö →',
       prodSectionLabel: 'Kiinnostavat tuotteet',
-      prodInfoText: 'Täydelliset tekniset tiedot ja tietolomakkeet löydät koko tuoteluettelostamme.'
+      prodInfoText: 'Täydelliset tekniset tiedot ja tietolomakkeet löydät koko tuoteluettelostamme.',
+      capacityLabel: 'Kapasiteetti:', reachLabel: 'Ulottuvuus:', viewProductLabel: 'Näytä tuote'
     },
     de: {
       pageTitle: 'Produktübersicht & Angebot',
@@ -1466,7 +1518,8 @@
       formSub: 'Füllen Sie Ihre Daten aus, wir melden uns in Kürze bei Ihnen.',
       submitBtn: 'Angebotsanfrage senden →',
       prodSectionLabel: 'Interessante Produkte',
-      prodInfoText: 'Vollständige technische Spezifikationen und Datenblätter finden Sie in unserem gesamten Produktkatalog.'
+      prodInfoText: 'Vollständige technische Spezifikationen und Datenblätter finden Sie in unserem gesamten Produktkatalog.',
+      capacityLabel: 'Tragkraft:', reachLabel: 'Reichweite:', viewProductLabel: 'Produkt ansehen'
     },
     it: {
       pageTitle: 'Panoramica prodotti e preventivo',
@@ -1479,7 +1532,8 @@
       formSub: 'Inserisci i tuoi dati e ti ricontatteremo a breve.',
       submitBtn: 'Invia richiesta di preventivo →',
       prodSectionLabel: 'Prodotti di interesse',
-      prodInfoText: 'Per specifiche tecniche complete e schede tecniche, consulta il nostro catalogo prodotti completo.'
+      prodInfoText: 'Per specifiche tecniche complete e schede tecniche, consulta il nostro catalogo prodotti completo.',
+      capacityLabel: 'Portata:', reachLabel: 'Sbraccio:', viewProductLabel: 'Vedi prodotto'
     },
     es: {
       pageTitle: 'Resumen de productos y presupuesto',
@@ -1492,7 +1546,8 @@
       formSub: 'Completa tus datos y te responderemos en breve.',
       submitBtn: 'Enviar solicitud de presupuesto →',
       prodSectionLabel: 'Productos de interés',
-      prodInfoText: 'Para especificaciones técnicas completas y fichas de datos, consulta nuestro catálogo completo de productos.'
+      prodInfoText: 'Para especificaciones técnicas completas y fichas de datos, consulta nuestro catálogo completo de productos.',
+      capacityLabel: 'Capacidad:', reachLabel: 'Alcance:', viewProductLabel: 'Ver producto'
     },
     fr: {
       pageTitle: 'Présentation des produits et devis',
@@ -1505,7 +1560,8 @@
       formSub: 'Renseignez vos coordonnées, nous vous répondrons rapidement.',
       submitBtn: 'Envoyer la demande de devis →',
       prodSectionLabel: 'Produits qui vous intéressent',
-      prodInfoText: 'Pour les spécifications techniques complètes et les fiches techniques, consultez notre catalogue complet.'
+      prodInfoText: 'Pour les spécifications techniques complètes et les fiches techniques, consultez notre catalogue complet.',
+      capacityLabel: 'Capacité:', reachLabel: 'Portée:', viewProductLabel: 'Voir le produit'
     }
   };
 

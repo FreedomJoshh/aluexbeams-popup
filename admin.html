@@ -423,6 +423,18 @@
     }
     .btn-add-node:hover { border-color: var(--a-primary); color: var(--a-primary); }
 
+    .lang-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .lang-pick-btn {
+      padding: 9px 16px; border-radius: 9px;
+      border: 1.5px solid var(--a-border); background: #fff; color: var(--a-text);
+      font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: all .15s;
+    }
+    .lang-pick-btn:hover { border-color: var(--a-primary); color: var(--a-primary); }
+    .lang-pick-btn.active {
+      background: var(--a-primary); border-color: var(--a-primary); color: #fff;
+    }
+
     @media (max-width: 420px) {
       .login-card { padding: 28px 16px; }
       .login-title { font-size: 19px; }
@@ -509,6 +521,10 @@
     <button class="tab-btn" data-tab="chat" onclick="switchTab('chat')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Chat
+    </button>
+    <button class="tab-btn" data-tab="languages" onclick="switchTab('languages')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Languages
     </button>
     <button class="tab-btn" data-tab="shopify" onclick="switchTab('shopify')">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
@@ -891,6 +907,137 @@
       </div>
     </div>
 
+    <!-- ══ LANGUAGES tab ═══════════════════════════════ -->
+    <div class="tab-panel" id="tab-languages">
+      <div class="a-section">
+        <div class="a-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Translated Content
+        </div>
+        <div class="a-section-sub">
+          The popup auto-detects a visitor's language from your Shopify store URL (e.g. <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:12px">/sv/</code> or a <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:12px">sv.</code> subdomain) and shows it in that language automatically, falling back to English. Fields below are pre-filled with professional default translations — edit any of them to customize. The chat flow, videos, colors and form link stay the same across all languages and are managed in their own tabs.
+        </div>
+        <div class="lang-picker" id="lang-picker"></div>
+      </div>
+
+      <div class="a-section">
+        <div class="a-section-title">Page</div>
+        <div class="a-field">
+          <label class="a-label">Browser Tab Title</label>
+          <input class="a-input" type="text" id="lang-pageTitle">
+        </div>
+      </div>
+
+      <div class="a-section">
+        <div class="a-section-title">Progress Step Labels</div>
+        <div class="a-grid cols4">
+          <div class="a-field">
+            <label class="a-label">Step 1</label>
+            <input class="a-input" type="text" id="lang-step1Lbl">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Step 2</label>
+            <input class="a-input" type="text" id="lang-step2Lbl">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Step 3</label>
+            <input class="a-input" type="text" id="lang-step3Lbl">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Step 4</label>
+            <input class="a-input" type="text" id="lang-step4Lbl">
+          </div>
+        </div>
+      </div>
+
+      <div class="a-section">
+        <div class="a-section-title">Section Titles</div>
+        <div class="a-grid cols3">
+          <div class="a-field">
+            <label class="a-label">Video 1</label>
+            <input class="a-input" type="text" id="lang-sec1Title">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Video 2</label>
+            <input class="a-input" type="text" id="lang-sec2Title">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Video 3</label>
+            <input class="a-input" type="text" id="lang-sec3Title">
+          </div>
+        </div>
+      </div>
+
+      <div class="a-section">
+        <div class="a-section-title">Navigation Buttons</div>
+        <div style="font-size:12px;font-weight:700;color:var(--a-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Under Video 1 (Intro)</div>
+        <div class="a-grid cols3">
+          <div class="a-field">
+            <label class="a-label">Button 1</label>
+            <input class="a-input" type="text" id="lang-v1b1">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 2</label>
+            <input class="a-input" type="text" id="lang-v1b2">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 3</label>
+            <input class="a-input" type="text" id="lang-v1b3">
+          </div>
+        </div>
+        <div class="a-divider"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--a-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Under Video 2 (X-beams)</div>
+        <div class="a-grid">
+          <div class="a-field">
+            <label class="a-label">Button 1</label>
+            <input class="a-input" type="text" id="lang-v2b1">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 2</label>
+            <input class="a-input" type="text" id="lang-v2b2">
+          </div>
+        </div>
+        <div class="a-divider"></div>
+        <div style="font-size:12px;font-weight:700;color:var(--a-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Under Video 3 (Spreader Bars)</div>
+        <div class="a-grid">
+          <div class="a-field">
+            <label class="a-label">Button 1</label>
+            <input class="a-input" type="text" id="lang-v3b1">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Button 2</label>
+            <input class="a-input" type="text" id="lang-v3b2">
+          </div>
+        </div>
+      </div>
+
+      <div class="a-section">
+        <div class="a-section-title">Quote Form</div>
+        <div class="a-grid">
+          <div class="a-field">
+            <label class="a-label">Form Title</label>
+            <input class="a-input" type="text" id="lang-formTitle">
+          </div>
+          <div class="a-field">
+            <label class="a-label">Submit Button Text</label>
+            <input class="a-input" type="text" id="lang-submitBtn">
+          </div>
+          <div class="a-field full">
+            <label class="a-label">Form Subtitle</label>
+            <textarea class="a-input a-textarea" id="lang-formSub"></textarea>
+          </div>
+          <div class="a-field">
+            <label class="a-label">Products Section Label</label>
+            <input class="a-input" type="text" id="lang-prodSectionLabel">
+          </div>
+          <div class="a-field full">
+            <label class="a-label">Product Info Subtitle</label>
+            <input class="a-input" type="text" id="lang-prodInfoText">
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ SHOPIFY tab ════════════════════════════════ -->
     <div class="tab-panel" id="tab-shopify">
       <div class="a-section">
@@ -1113,6 +1260,9 @@
     // Chat
     initChatFlow();
 
+    // Languages
+    initLanguages();
+
     // Stats (preload so numbers are ready when tab is opened)
     loadStats();
   }
@@ -1143,6 +1293,8 @@
     current = s;
     localStorage.setItem('product_data', JSON.stringify(collectProducts()));
     localStorage.setItem('chat_flow', JSON.stringify(collectChatFlow()));
+    collectLanguageFields();
+    localStorage.setItem('lang_packs', JSON.stringify(langPacksData));
     showToast('Settings saved!', 'success');
   }
 
@@ -1151,7 +1303,10 @@
     localStorage.removeItem('site_settings');
     localStorage.removeItem('product_data');
     localStorage.removeItem('chat_flow');
+    localStorage.removeItem('lang_packs');
     chatFlowData = JSON.parse(JSON.stringify(DEFAULT_CHAT_FLOW));
+    langPacksData = {};
+    currentEditLang = 'sv';
     current = { ...DEFAULTS };
     initAdmin();
     showToast('Settings reset to defaults.', 'success');
@@ -1256,6 +1411,144 @@
     const url = localStorage.getItem('ax_stat_store_url') || '';
     const el  = document.getElementById('stat-store-url');
     if (el) el.value = url;
+  }
+
+  /* ── Languages ────────────────────────────────────── */
+  const LANG_LIST = [
+    { code: 'sv', name: 'Svenska'  },
+    { code: 'fi', name: 'Suomi'    },
+    { code: 'de', name: 'Deutsch'  },
+    { code: 'it', name: 'Italiano' },
+    { code: 'es', name: 'Español'  },
+    { code: 'fr', name: 'Français' },
+  ];
+  const LANG_FIELD_KEYS = [
+    'pageTitle', 'step1Lbl', 'step2Lbl', 'step3Lbl', 'step4Lbl',
+    'sec1Title', 'sec2Title', 'sec3Title',
+    'v1b1', 'v1b2', 'v1b3', 'v2b1', 'v2b2', 'v3b1', 'v3b2',
+    'formTitle', 'formSub', 'submitBtn', 'prodSectionLabel', 'prodInfoText'
+  ];
+  const LANG_CONTENT_DEFAULTS = {
+    sv: {
+      pageTitle: 'Produktöversikt och offert',
+      step1Lbl: 'Intro', step2Lbl: 'X-balkar', step3Lbl: 'Spridare', step4Lbl: 'Offert',
+      sec1Title: 'Introduktion', sec2Title: 'X-balkar', sec3Title: 'Spridarbalkar',
+      v1b1: 'X-balkar', v1b2: 'Spridarbalkar', v1b3: 'Begär offert',
+      v2b1: 'Spridarbalkar', v2b2: 'Begär offert',
+      v3b1: 'X-balkar', v3b2: 'Begär offert',
+      formTitle: 'Begär en offert',
+      formSub: 'Fyll i dina uppgifter så återkommer vi inom kort.',
+      submitBtn: 'Skicka offertförfrågan →',
+      prodSectionLabel: 'Produkter av intresse',
+      prodInfoText: 'För fullständiga tekniska specifikationer och datablad, se vår kompletta produktkatalog.'
+    },
+    fi: {
+      pageTitle: 'Tuotekatsaus ja tarjouspyyntö',
+      step1Lbl: 'Esittely', step2Lbl: 'X-palkit', step3Lbl: 'Levityspalkki', step4Lbl: 'Tarjous',
+      sec1Title: 'Esittely', sec2Title: 'X-palkit', sec3Title: 'Levityspalkit',
+      v1b1: 'X-palkit', v1b2: 'Levityspalkit', v1b3: 'Pyydä tarjous',
+      v2b1: 'Levityspalkit', v2b2: 'Pyydä tarjous',
+      v3b1: 'X-palkit', v3b2: 'Pyydä tarjous',
+      formTitle: 'Pyydä tarjous',
+      formSub: 'Täytä tietosi, niin palaamme asiaan pian.',
+      submitBtn: 'Lähetä tarjouspyyntö →',
+      prodSectionLabel: 'Kiinnostavat tuotteet',
+      prodInfoText: 'Täydelliset tekniset tiedot ja tietolomakkeet löydät koko tuoteluettelostamme.'
+    },
+    de: {
+      pageTitle: 'Produktübersicht & Angebot',
+      step1Lbl: 'Intro', step2Lbl: 'X-Träger', step3Lbl: 'Traverse', step4Lbl: 'Angebot',
+      sec1Title: 'Einführung', sec2Title: 'X-Träger', sec3Title: 'Traversen',
+      v1b1: 'X-Träger', v1b2: 'Traversen', v1b3: 'Angebot anfordern',
+      v2b1: 'Traversen', v2b2: 'Angebot anfordern',
+      v3b1: 'X-Träger', v3b2: 'Angebot anfordern',
+      formTitle: 'Angebot anfordern',
+      formSub: 'Füllen Sie Ihre Daten aus, wir melden uns in Kürze bei Ihnen.',
+      submitBtn: 'Angebotsanfrage senden →',
+      prodSectionLabel: 'Interessante Produkte',
+      prodInfoText: 'Vollständige technische Spezifikationen und Datenblätter finden Sie in unserem gesamten Produktkatalog.'
+    },
+    it: {
+      pageTitle: 'Panoramica prodotti e preventivo',
+      step1Lbl: 'Intro', step2Lbl: 'Travi X', step3Lbl: 'Bilancino', step4Lbl: 'Preventivo',
+      sec1Title: 'Introduzione', sec2Title: 'Travi X', sec3Title: 'Bilancini di sollevamento',
+      v1b1: 'Travi X', v1b2: 'Bilancini', v1b3: 'Richiedi preventivo',
+      v2b1: 'Bilancini', v2b2: 'Richiedi preventivo',
+      v3b1: 'Travi X', v3b2: 'Richiedi preventivo',
+      formTitle: 'Richiedi un preventivo',
+      formSub: 'Inserisci i tuoi dati e ti ricontatteremo a breve.',
+      submitBtn: 'Invia richiesta di preventivo →',
+      prodSectionLabel: 'Prodotti di interesse',
+      prodInfoText: 'Per specifiche tecniche complete e schede tecniche, consulta il nostro catalogo prodotti completo.'
+    },
+    es: {
+      pageTitle: 'Resumen de productos y presupuesto',
+      step1Lbl: 'Intro', step2Lbl: 'Vigas X', step3Lbl: 'Separador', step4Lbl: 'Presupuesto',
+      sec1Title: 'Introducción', sec2Title: 'Vigas X', sec3Title: 'Barras separadoras',
+      v1b1: 'Vigas X', v1b2: 'Barras separadoras', v1b3: 'Solicitar presupuesto',
+      v2b1: 'Barras separadoras', v2b2: 'Solicitar presupuesto',
+      v3b1: 'Vigas X', v3b2: 'Solicitar presupuesto',
+      formTitle: 'Solicitar un presupuesto',
+      formSub: 'Completa tus datos y te responderemos en breve.',
+      submitBtn: 'Enviar solicitud de presupuesto →',
+      prodSectionLabel: 'Productos de interés',
+      prodInfoText: 'Para especificaciones técnicas completas y fichas de datos, consulta nuestro catálogo completo de productos.'
+    },
+    fr: {
+      pageTitle: 'Présentation des produits et devis',
+      step1Lbl: 'Intro', step2Lbl: 'Palonniers X', step3Lbl: 'Palonnier', step4Lbl: 'Devis',
+      sec1Title: 'Introduction', sec2Title: 'Palonniers X', sec3Title: 'Palonniers',
+      v1b1: 'Palonniers X', v1b2: 'Palonniers', v1b3: 'Demander un devis',
+      v2b1: 'Palonniers', v2b2: 'Demander un devis',
+      v3b1: 'Palonniers X', v3b2: 'Demander un devis',
+      formTitle: 'Demander un devis',
+      formSub: 'Renseignez vos coordonnées, nous vous répondrons rapidement.',
+      submitBtn: 'Envoyer la demande de devis →',
+      prodSectionLabel: 'Produits qui vous intéressent',
+      prodInfoText: 'Pour les spécifications techniques complètes et les fiches techniques, consultez notre catalogue complet.'
+    }
+  };
+
+  let langPacksData  = {};
+  let currentEditLang = 'sv';
+
+  function initLanguages() {
+    try { langPacksData = JSON.parse(localStorage.getItem('lang_packs') || '{}'); } catch(e) { langPacksData = {}; }
+    renderLangPicker();
+    loadLanguageFields(currentEditLang);
+  }
+
+  function renderLangPicker() {
+    const root = document.getElementById('lang-picker');
+    if (!root) return;
+    root.innerHTML = LANG_LIST.map(l =>
+      `<button type="button" class="lang-pick-btn ${l.code === currentEditLang ? 'active' : ''}" onclick="switchLanguageEdit('${l.code}')">${l.name}</button>`
+    ).join('');
+  }
+
+  function loadLanguageFields(code) {
+    const overrides = langPacksData[code] || {};
+    const defaults  = LANG_CONTENT_DEFAULTS[code] || {};
+    LANG_FIELD_KEYS.forEach(k => {
+      const el = document.getElementById('lang-' + k);
+      if (el) el.value = overrides[k] !== undefined ? overrides[k] : (defaults[k] || '');
+    });
+  }
+
+  function collectLanguageFields() {
+    const obj = {};
+    LANG_FIELD_KEYS.forEach(k => {
+      const el = document.getElementById('lang-' + k);
+      if (el) obj[k] = el.value;
+    });
+    langPacksData[currentEditLang] = obj;
+  }
+
+  function switchLanguageEdit(code) {
+    collectLanguageFields();
+    currentEditLang = code;
+    renderLangPicker();
+    loadLanguageFields(code);
   }
 
   /* ── Chat flow editor ────────────────────────────── */
@@ -1485,7 +1778,8 @@
   function generateEmbedCode() {
     const s = collectSettings();
     const p = collectProducts();
-    const payload = { settings: s, products: p, chatFlow: collectChatFlow() };
+    collectLanguageFields();
+    const payload = { settings: s, products: p, chatFlow: collectChatFlow(), langPacks: langPacksData };
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
     const origin = window.location.href.replace(/\/admin\.html.*$/, '');
     const color  = s.primaryColor || '#3b79bd';

@@ -4,10 +4,27 @@
   var el = document.currentScript;
   var base = (el && el.getAttribute('data-url')) ||
              (el && el.src.replace(/\/embed\.js[\s\S]*$/, '')) || '';
-  var FRAME_URL    = base + '/index.html';
   var LABEL        = (el && el.getAttribute('data-label'))    || 'Get a Quote';
   var COLOR        = (el && el.getAttribute('data-color'))    || '#3b79bd';
   var SETTINGS_B64 = (el && el.getAttribute('data-settings')) || '';
+  var LANG_OVERRIDE = (el && el.getAttribute('data-lang'))    || '';
+
+  /* ── Language detection (from store URL path/subdomain) ────── */
+  var SUPPORTED_LANGS = ['sv', 'fi', 'de', 'it', 'es', 'fr'];
+  function detectLang() {
+    if (LANG_OVERRIDE && SUPPORTED_LANGS.indexOf(LANG_OVERRIDE) !== -1) return LANG_OVERRIDE;
+    try {
+      var path = window.location.pathname.toLowerCase();
+      var m = path.match(/^\/([a-z]{2})(?:-[a-z]{2})?(?:\/|$)/);
+      if (m && SUPPORTED_LANGS.indexOf(m[1]) !== -1) return m[1];
+      var host = window.location.hostname.toLowerCase();
+      var hm = host.match(/^([a-z]{2})\./);
+      if (hm && SUPPORTED_LANGS.indexOf(hm[1]) !== -1) return hm[1];
+    } catch (_) {}
+    return '';
+  }
+  var DETECTED_LANG = detectLang();
+  var FRAME_URL = base + '/index.html' + (DETECTED_LANG ? '?lang=' + DETECTED_LANG : '');
 
   /* ── Stats storage (Shopify-side) ───────────── */
   var STATS_KEY = 'ax_stats';
@@ -111,6 +128,7 @@
     document.getElementById('ax-frame').addEventListener('load', function () {
       try {
         var data = JSON.parse(decodeURIComponent(escape(atob(SETTINGS_B64))));
+        if (DETECTED_LANG) data.lang = DETECTED_LANG;
         document.getElementById('ax-frame').contentWindow.postMessage(
           { type: 'AX_SETTINGS', data: data }, '*'
         );

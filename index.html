@@ -1437,10 +1437,6 @@
     });
   }
 
-  (function loadSettings() {
-    applyLang(detectInitialLang());
-  })();
-
   /* ── Receive settings from Shopify embed.js ─── */
   window.addEventListener('message', function(e) {
     if (!e.data || e.data.type !== 'AX_SETTINGS') return;
@@ -1724,8 +1720,9 @@
       </div>`).join('');
   }
 
-  renderProducts();
-  renderFormProducts();
+  (function loadSettings() {
+    applyLang(detectInitialLang());
+  })();
 
   if (window.self !== window.top) {
     var al = document.querySelector('.admin-link');

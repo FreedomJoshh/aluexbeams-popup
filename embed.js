@@ -26,6 +26,16 @@
   var DETECTED_LANG = detectLang();
   var FRAME_URL = base + '/index.html' + (DETECTED_LANG ? '?lang=' + DETECTED_LANG : '');
 
+  /* ── Decode settings blob early (needed for bubble label) ───── */
+  var DECODED_SETTINGS = null;
+  if (SETTINGS_B64) {
+    try { DECODED_SETTINGS = JSON.parse(decodeURIComponent(escape(atob(SETTINGS_B64)))); } catch (_) {}
+  }
+  if (DETECTED_LANG && DECODED_SETTINGS && DECODED_SETTINGS.langPacks) {
+    var langPack = DECODED_SETTINGS.langPacks[DETECTED_LANG];
+    if (langPack && langPack.bubbleLabel) LABEL = langPack.bubbleLabel;
+  }
+
   /* ── Stats storage (Shopify-side) ───────────── */
   var STATS_KEY = 'ax_stats';
   function getStats() { try { return JSON.parse(localStorage.getItem(STATS_KEY) || '{}'); } catch(_) { return {}; } }
@@ -124,10 +134,10 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
 
   /* ── Pass settings to iframe via postMessage ─── */
-  if (SETTINGS_B64) {
+  if (DECODED_SETTINGS) {
     document.getElementById('ax-frame').addEventListener('load', function () {
       try {
-        var data = JSON.parse(decodeURIComponent(escape(atob(SETTINGS_B64))));
+        var data = DECODED_SETTINGS;
         if (DETECTED_LANG) data.lang = DETECTED_LANG;
         document.getElementById('ax-frame').contentWindow.postMessage(
           { type: 'AX_SETTINGS', data: data }, '*'
